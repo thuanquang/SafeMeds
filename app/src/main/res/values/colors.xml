@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_green">#16C77D</color>
+    <color name="primary_green_dark">#0EA164</color>
+    <color name="accent_red">#EB5757</color>
+    <color name="bg_light">#F6FFF9</color>
+    <color name="bg_dark">#0F1C28</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="text_primary">#1F2A32</color>
+    <color name="text_secondary">#6A737B</color>
+    <color name="border_light">#E5E9EC</color>
+    <color name="chip_bg">#E7F8EE</color>
+    <color name="success_green">#1ABC64</color>
+    <color name="warning_orange">#F2C94C</color>
+    <color name="muted_gray">#9EA5AB</color>
+</resources>
+

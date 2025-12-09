@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SafeMed</string>
+    <string name="lorem_short">Lorem ipsum dolor sit amet</string>
+    <string name="btn_start_scan">Bắt đầu quét</string>
+    <string name="btn_finish_scan">Hoàn thành quét</string>
+    <string name="btn_login">Đăng nhập</string>
+    <string name="btn_register">Đăng ký tài khoản</string>
+    <string name="btn_contact">Liên hệ</string>
+    <string name="btn_download_app">Tải ứng dụng</string>
+</resources>
+
