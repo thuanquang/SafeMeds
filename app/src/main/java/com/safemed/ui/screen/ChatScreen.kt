@@ -14,12 +14,12 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScanScreen() {
+fun ChatScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
-            title = { Text(text = "Scan") },
+            title = { Text(text = "Chat") },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -31,16 +31,15 @@ fun ScanScreen() {
                 .fillMaxSize()
         ) {
             Text(
-                text = "Scan placeholder",
+                text = "Chat placeholder",
                 style = MaterialTheme.typography.headlineMedium
             )
             Text(
-                text = "Wire CameraX preview + barcode/QR parsing next.",
+                text = "Implement messaging features here.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
-
 
