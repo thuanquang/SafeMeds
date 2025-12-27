@@ -14,30 +14,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.safemed.ui.component.*
-import com.safemed.ui.theme.EmeraldGreen
 import com.safemed.ui.theme.SurfaceLight
 import com.safemed.ui.theme.TextSecondary
 
 /**
- * Màn hình đăng nhập theo thiết kế Figma
+ * Màn hình đăng ký theo thiết kế Figma
  * 
- * @param onLoginSuccess Callback khi đăng nhập thành công, navigate đến Home
- * @param onNavigateToRegister Callback để navigate đến màn hình đăng ký
- * @param viewModel ViewModel quản lý logic đăng nhập, inject bởi Hilt
+ * @param onRegisterSuccess Callback khi đăng ký thành công, navigate đến Home
+ * @param onNavigateToLogin Callback để navigate đến màn hình đăng nhập
+ * @param viewModel ViewModel quản lý logic đăng ký, inject bởi Hilt
  */
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit = {},
-    viewModel: LoginViewModel = hiltViewModel()
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit = {},
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
     // Collect UI state từ ViewModel
     val uiState by viewModel.uiState.collectAsState()
 
-    // Handle navigation khi đăng nhập thành công
-    LaunchedEffect(uiState.isLoginSuccess) {
-        if (uiState.isLoginSuccess) {
-            onLoginSuccess()
+    // Handle navigation khi đăng ký thành công
+    LaunchedEffect(uiState.isRegisterSuccess) {
+        if (uiState.isRegisterSuccess) {
+            onRegisterSuccess()
             viewModel.onNavigateHandled()
         }
     }
@@ -55,17 +54,17 @@ fun LoginScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
             // ===== Header Section =====
             Text(
-                text = "Đăng nhập",
+                text = "Đăng ký tài khoản",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Chào mừng bạn trở lại SafeMed",
+                text = "Tạo tài khoản để sử dụng SafeMed",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
                 textAlign = TextAlign.Center
@@ -74,6 +73,19 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // ===== Form Section =====
+            // Họ và tên TextField
+            SafeMedTextField(
+                value = uiState.fullName,
+                onValueChange = viewModel::onFullNameChange,
+                label = "Họ và tên",
+                placeholder = "Nguyễn Văn A",
+                isError = uiState.fullNameError != null,
+                errorMessage = uiState.fullNameError,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Email TextField
             SafeMedTextField(
                 value = uiState.email,
@@ -88,7 +100,21 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password TextField
+            // Số điện thoại TextField
+            SafeMedTextField(
+                value = uiState.phone,
+                onValueChange = viewModel::onPhoneChange,
+                label = "Số điện thoại",
+                placeholder = "0123 456 789",
+                keyboardType = KeyboardType.Phone,
+                isError = uiState.phoneError != null,
+                errorMessage = uiState.phoneError,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mật khẩu TextField
             SafeMedPasswordField(
                 value = uiState.password,
                 onValueChange = viewModel::onPasswordChange,
@@ -99,23 +125,35 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // ===== Remember Me & Forgot Password Row =====
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SafeMedCheckbox(
-                    checked = uiState.rememberMe,
-                    onCheckedChange = viewModel::onRememberMeChange,
-                    text = "Ghi nhớ đăng nhập"
-                )
-                ClickableTextLink(
-                    text = "Quên mật khẩu?",
-                    onClick = viewModel::onForgotPasswordClick,
-                    color = EmeraldGreen
+            // Xác nhận mật khẩu TextField
+            SafeMedPasswordField(
+                value = uiState.confirmPassword,
+                onValueChange = viewModel::onConfirmPasswordChange,
+                label = "Xác nhận mật khẩu",
+                placeholder = "Nhập lại mật khẩu",
+                isError = uiState.confirmPasswordError != null,
+                errorMessage = uiState.confirmPasswordError,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ===== Terms & Conditions Checkbox =====
+            SafeMedCheckboxWithLinks(
+                checked = uiState.agreeToTerms,
+                onCheckedChange = viewModel::onAgreeToTermsChange,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Terms error
+            uiState.termsError?.let { error ->
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 48.dp, top = 4.dp)
                 )
             }
 
@@ -133,38 +171,38 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // ===== Login Button =====
+            // ===== Register Button =====
             SafeMedPrimaryButton(
-                text = "Đăng nhập",
-                onClick = viewModel::onLoginClick,
+                text = "Đăng ký tài khoản",
+                onClick = viewModel::onRegisterClick,
                 isLoading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== Divider =====
-            DividerWithText(text = "Hoặc đăng nhập với")
+            // ===== Navigate to Login Link =====
+            TextWithLink(
+                normalText = "Đã có tài khoản?",
+                linkText = "Đăng nhập ngay",
+                onLinkClick = onNavigateToLogin
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== Google Sign In Button =====
+            // ===== Divider =====
+            DividerWithText(text = "Hoặc đăng ký với")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ===== Google Sign Up Button =====
             GoogleSignInButton(
                 text = "Đăng ký với Google",
-                onClick = viewModel::onGoogleSignInClick,
+                onClick = viewModel::onGoogleSignUpClick,
                 enabled = !uiState.isLoading
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            // ===== Navigate to Register Link =====
-            TextWithLink(
-                normalText = "Chưa có tài khoản?",
-                linkText = "Đăng ký ngay",
-                onLinkClick = onNavigateToRegister
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
 
             // ===== Footer =====
             CopyrightFooter(
@@ -173,4 +211,3 @@ fun LoginScreen(
         }
     }
 }
-
