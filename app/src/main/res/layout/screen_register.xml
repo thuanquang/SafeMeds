@@ -89,7 +89,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:endIconMode="password_toggle"
+                    app:endIconMode="password_toggle"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -104,7 +104,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:endIconMode="password_toggle"
+                    app:endIconMode="password_toggle"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -154,7 +154,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:icon="@android:drawable/ic_dialog_email"
-                    android:iconGravity="textStart"
+                    app:iconGravity="textStart"
                     android:text="Đăng ký với Google" />
             </LinearLayout>
         </ScrollView>

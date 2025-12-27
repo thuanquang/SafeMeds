@@ -188,7 +188,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
-                    android:text="R&D leader - Tăng Hồ Thi An"
+                    android:text="R&amp;D leader - Tăng Hồ Thi An"
                     android:textColor="@color/text_primary"
                     android:textStyle="bold" />
 
