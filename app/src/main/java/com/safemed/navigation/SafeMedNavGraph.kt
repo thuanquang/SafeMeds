@@ -85,7 +85,12 @@ fun SafeMedNavGraph(
         // Màn hình hồ sơ
         composable(AppDestination.Profile.route) {
             ProfileScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate(AppDestination.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 

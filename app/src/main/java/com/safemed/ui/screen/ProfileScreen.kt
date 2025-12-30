@@ -17,9 +17,26 @@ import com.google.firebase.ktx.Firebase
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val currentUser = Firebase.auth.currentUser
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Handle navigation khi đăng xuất thành công
+    LaunchedEffect(uiState.isLogoutSuccess) {
+        if (uiState.isLogoutSuccess) {
+            onLogout()
+            viewModel.onNavigateHandled()
+        }
+    }
+
+    // Hiển thị error message nếu có
+    uiState.errorMessage?.let { error ->
+        LaunchedEffect(error) {
+            // TODO: Show Snackbar hoặc Toast với error message
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -31,10 +48,10 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        Firebase.auth.signOut()
-                        onLogout()
-                    }) {
+                    IconButton(
+                        onClick = viewModel::logout,
+                        enabled = !uiState.isLoading
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
                     }
                 },
@@ -95,21 +112,26 @@ fun ProfileScreen(
 
             // Logout button
             OutlinedButton(
-                onClick = {
-                    Firebase.auth.signOut()
-                    onLogout()
-                },
+                onClick = viewModel::logout,
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ExitToApp,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("Đăng xuất")
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("Đăng xuất")
+                }
             }
         }
     }
