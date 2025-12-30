@@ -3,8 +3,9 @@ package com.safemed.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.safemed.ui.screen.DebugScreen
 import com.safemed.ui.screen.HomeScreen
 import com.safemed.ui.screen.LoginScreen
 import com.safemed.ui.screen.MapScreen
@@ -15,15 +16,14 @@ import com.safemed.ui.screen.ScanScreen
 /**
  * NavHost chính của ứng dụng SafeMed
  * Quản lý navigation giữa các màn hình
- * 
- * @param startDestination Route bắt đầu, mặc định là Login.
- *                         Nếu user đã đăng nhập, sẽ là Home.
+ *
+ * @param startDestination Điểm bắt đầu (Login hoặc Home tùy theo auth state)
  */
 @Composable
-fun SafeMedNavHost(
+fun SafeMedNavGraph(
     navController: NavHostController,
-    startDestination: String = AppDestination.Login.route,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    startDestination: String = AppDestination.Login.route
 ) {
     NavHost(
         navController = navController,
@@ -34,56 +34,66 @@ fun SafeMedNavHost(
         composable(AppDestination.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
-                    // Navigate đến Home và xóa backstack
                     navController.navigate(AppDestination.Home.route) {
                         popUpTo(AppDestination.Login.route) { inclusive = true }
                     }
                 },
                 onNavigateToRegister = {
-                    // Navigate đến Register
                     navController.navigate(AppDestination.Register.route)
                 }
             )
         }
-        
+
         // Màn hình đăng ký
         composable(AppDestination.Register.route) {
             RegisterScreen(
                 onRegisterSuccess = {
-                    // Navigate đến Home và xóa backstack
                     navController.navigate(AppDestination.Home.route) {
                         popUpTo(AppDestination.Login.route) { inclusive = true }
                     }
                 },
                 onNavigateToLogin = {
-                    // Quay lại màn hình Login
                     navController.popBackStack()
                 }
             )
         }
-        
+
         // Màn hình chính
         composable(AppDestination.Home.route) {
             HomeScreen(
                 onNavigateToMap = { navController.navigate(AppDestination.Map.route) },
                 onNavigateToScan = { navController.navigate(AppDestination.Scan.route) },
-                onNavigateToProfile = { navController.navigate(AppDestination.Profile.route) }
+                onNavigateToProfile = { navController.navigate(AppDestination.Profile.route) },
+                onNavigateToDebug = { navController.navigate(AppDestination.Debug.route) }
             )
         }
-        
+
         // Màn hình bản đồ
         composable(AppDestination.Map.route) {
-            MapScreen()
+            MapScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        
+
         // Màn hình quét thuốc
         composable(AppDestination.Scan.route) {
-            ScanScreen()
+            ScanScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        
+
         // Màn hình hồ sơ
         composable(AppDestination.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình Debug (chỉ dùng trong development)
+        composable(AppDestination.Debug.route) {
+            DebugScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

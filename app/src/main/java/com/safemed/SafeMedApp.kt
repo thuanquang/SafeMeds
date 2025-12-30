@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.safemed.navigation.AppDestination
-import com.safemed.navigation.SafeMedNavHost
+import com.safemed.navigation.SafeMedNavGraph
 import com.safemed.ui.theme.SafeMedTheme
 
 @Composable
@@ -27,7 +27,7 @@ fun SafeMedApp() {
                 }
             }
             
-            SafeMedNavHost(
+            SafeMedNavGraph(
                 navController = navController,
                 startDestination = startDestination
             )
