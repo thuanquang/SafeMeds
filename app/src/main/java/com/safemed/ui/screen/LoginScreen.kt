@@ -1,5 +1,6 @@
 package com.safemed.ui.screen
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,10 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    // Lấy Activity context để truyền vào Google Sign-In
+    val context = LocalContext.current
+    val activity = context as Activity
+
     // Collect UI state từ ViewModel
     val uiState by viewModel.uiState.collectAsState()
 
@@ -150,8 +156,8 @@ fun LoginScreen(
 
             // ===== Google Sign In Button =====
             GoogleSignInButton(
-                text = "Đăng ký với Google",
-                onClick = viewModel::onGoogleSignInClick,
+                text = "Đăng nhập với Google",
+                onClick = { viewModel.onGoogleSignInClick(activity) },
                 enabled = !uiState.isLoading
             )
 

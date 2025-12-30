@@ -1,9 +1,10 @@
 package com.safemed.ui.screen
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.safemed.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,105 +36,42 @@ data class RegisterUiState(
 
 /**
  * ViewModel quản lý logic màn hình đăng ký
- * Sử dụng Hilt để dependency injection
- * 
- * Thiết kế theo Clean Architecture:
- * - UI State được quản lý bởi StateFlow
- * - Có thể dễ dàng tích hợp UseCase và Repository sau này
- * - Placeholder cho việc gọi API (Supabase/Firebase)
+ * Tích hợp Firebase Authentication với Google Sign-In
  */
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    // TODO: Inject AuthRepository khi tích hợp backend
-    // private val authRepository: AuthRepository
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // StateFlow cho UI state
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    /**
-     * Cập nhật họ tên khi người dùng nhập
-     */
     fun onFullNameChange(fullName: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                fullName = fullName,
-                fullNameError = null,
-                generalError = null
-            )
-        }
+        _uiState.update { it.copy(fullName = fullName, fullNameError = null, generalError = null) }
     }
 
-    /**
-     * Cập nhật email khi người dùng nhập
-     */
     fun onEmailChange(email: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                email = email,
-                emailError = null,
-                generalError = null
-            )
-        }
+        _uiState.update { it.copy(email = email, emailError = null, generalError = null) }
     }
 
-    /**
-     * Cập nhật số điện thoại khi người dùng nhập
-     */
     fun onPhoneChange(phone: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                phone = phone,
-                phoneError = null,
-                generalError = null
-            )
-        }
+        _uiState.update { it.copy(phone = phone, phoneError = null, generalError = null) }
     }
 
-    /**
-     * Cập nhật mật khẩu khi người dùng nhập
-     */
     fun onPasswordChange(password: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                password = password,
-                passwordError = null,
-                confirmPasswordError = null,
-                generalError = null
-            )
+        _uiState.update { 
+            it.copy(password = password, passwordError = null, confirmPasswordError = null, generalError = null) 
         }
     }
 
-    /**
-     * Cập nhật xác nhận mật khẩu khi người dùng nhập
-     */
     fun onConfirmPasswordChange(confirmPassword: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                confirmPassword = confirmPassword,
-                confirmPasswordError = null,
-                generalError = null
-            )
-        }
+        _uiState.update { it.copy(confirmPassword = confirmPassword, confirmPasswordError = null, generalError = null) }
     }
 
-    /**
-     * Cập nhật trạng thái đồng ý điều khoản
-     */
     fun onAgreeToTermsChange(agree: Boolean) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                agreeToTerms = agree,
-                termsError = null
-            )
-        }
+        _uiState.update { it.copy(agreeToTerms = agree, termsError = null) }
     }
 
-    /**
-     * Validate form đăng ký
-     * @return true nếu form hợp lệ
-     */
     private fun validateForm(): Boolean {
         val currentState = _uiState.value
         var isValid = true
@@ -193,8 +131,7 @@ class RegisterViewModel @Inject constructor(
     }
 
     /**
-     * Xử lý đăng ký tài khoản
-     * Placeholder: Sẽ gọi API khi tích hợp backend
+     * Đăng ký bằng Email/Password
      */
     fun onRegisterClick() {
         if (!validateForm()) return
@@ -202,63 +139,65 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
 
-            try {
-                // TODO: Gọi API đăng ký thực tế
-                // val result = authRepository.register(
-                //     fullName = _uiState.value.fullName,
-                //     email = _uiState.value.email,
-                //     phone = _uiState.value.phone,
-                //     password = _uiState.value.password
-                // )
-                
-                // Simulate network delay (placeholder)
-                delay(1500)
-
-                // Placeholder: Giả lập đăng ký thành công
-                _uiState.update { it.copy(isLoading = false, isRegisterSuccess = true) }
-
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        generalError = "Đăng ký thất bại. Vui lòng thử lại."
-                    ) 
+            authRepository.createUserWithEmailPassword(
+                email = _uiState.value.email,
+                password = _uiState.value.password,
+                fullName = _uiState.value.fullName,
+                phone = _uiState.value.phone
+            )
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isRegisterSuccess = true) }
                 }
-            }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = mapFirebaseError(exception)
+                        )
+                    }
+                }
         }
     }
 
     /**
-     * Xử lý đăng ký với Google
-     * Placeholder: Sẽ tích hợp Google Sign-In SDK
+     * Đăng ký bằng Google
+     * @param activity Activity context cần thiết cho Credential Manager
      */
-    fun onGoogleSignUpClick() {
+    fun onGoogleSignUpClick(activity: Activity) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
 
-            try {
-                // TODO: Tích hợp Google Sign-In
-                // val googleIdToken = googleSignInClient.signIn()
-                // val result = authRepository.registerWithGoogle(googleIdToken)
-                
-                delay(1500)
-                _uiState.update { it.copy(isLoading = false, isRegisterSuccess = true) }
-
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        generalError = "Đăng ký với Google thất bại."
-                    ) 
+            authRepository.signInWithGoogle(activity)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isRegisterSuccess = true) }
                 }
-            }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = "Đăng ký với Google thất bại: ${exception.localizedMessage}"
+                        )
+                    }
+                }
         }
     }
 
-    /**
-     * Reset trạng thái sau khi navigate
-     */
     fun onNavigateHandled() {
         _uiState.update { it.copy(isRegisterSuccess = false) }
+    }
+
+    private fun mapFirebaseError(exception: Throwable): String {
+        return when {
+            exception.message?.contains("EMAIL_EXISTS") == true ||
+            exception.message?.contains("email-already-in-use") == true ->
+                "Email này đã được sử dụng"
+            exception.message?.contains("WEAK_PASSWORD") == true ->
+                "Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn."
+            exception.message?.contains("INVALID_EMAIL") == true ->
+                "Email không hợp lệ"
+            exception.message?.contains("NETWORK") == true ->
+                "Lỗi kết nối mạng"
+            else -> "Đăng ký thất bại. Vui lòng thử lại."
+        }
     }
 }

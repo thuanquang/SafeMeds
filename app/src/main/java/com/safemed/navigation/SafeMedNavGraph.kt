@@ -15,15 +15,19 @@ import com.safemed.ui.screen.ScanScreen
 /**
  * NavHost chính của ứng dụng SafeMed
  * Quản lý navigation giữa các màn hình
+ * 
+ * @param startDestination Route bắt đầu, mặc định là Login.
+ *                         Nếu user đã đăng nhập, sẽ là Home.
  */
 @Composable
 fun SafeMedNavHost(
     navController: NavHostController,
+    startDestination: String = AppDestination.Login.route,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = AppDestination.Login.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         // Màn hình đăng nhập

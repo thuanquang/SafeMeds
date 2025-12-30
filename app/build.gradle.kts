@@ -105,15 +105,24 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     // Firebase BoM (Bill of Materials) - đồng bộ phiên bản tất cả Firebase libraries
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    // Sử dụng version 32.8.1 tương thích với Kotlin 1.9.x
+    implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     // Firebase Authentication
-    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-auth")
     // Cloud Firestore
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-firestore")
     // Firebase Storage - lưu ảnh thuốc/avatar
-    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-storage")
     // Firebase Analytics
-    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Google Sign-In with Credential Manager
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Google Play services auth (for Email Link authentication)
+    implementation("com.google.android.gms:play-services-auth:21.4.0")
 
 
     // ============================================

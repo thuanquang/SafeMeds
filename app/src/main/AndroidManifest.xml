@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application
-        android:name=".SafeMedApplication"
-        android:allowBackup="true"
-        android:icon="@android:drawable/ic_dialog_info"
-        android:label="@string/app_name"
-        android:roundIcon="@android:drawable/ic_dialog_info"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.SafeMed">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+    <application android:name=".SafeMedApplication" android:allowBackup="true" android:icon="@android:drawable/ic_dialog_info" android:label="@string/app_name" android:roundIcon="@android:drawable/ic_dialog_info" android:supportsRtl="true" android:theme="@style/Theme.SafeMed">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Intent filter for Email Link Authentication -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="https" android:host="safemed-ueh.firebaseapp.com" android:pathPrefix="/__/auth/links" />
             </intent-filter>
         </activity>
     </application>

@@ -1,9 +1,11 @@
 package com.safemed.ui.screen
 
+import android.app.Activity
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.safemed.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,25 +25,25 @@ data class LoginUiState(
     val isLoginSuccess: Boolean = false,
     val emailError: String? = null,
     val passwordError: String? = null,
-    val generalError: String? = null
+    val generalError: String? = null,
+    val emailLinkSent: Boolean = false,
+    val successMessage: String? = null
 )
 
 /**
  * ViewModel quản lý logic màn hình đăng nhập
- * Sử dụng Hilt để dependency injection
- * 
- * Thiết kế theo Clean Architecture:
- * - UI State được quản lý bởi StateFlow
- * - Có thể dễ dàng tích hợp UseCase và Repository sau này
- * - Placeholder cho việc gọi API (Supabase/Firebase)
+ * Tích hợp Firebase Authentication với Google Sign-In và Email Link
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    // TODO: Inject AuthRepository khi tích hợp backend
-    // private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
-    // StateFlow cho UI state
+    companion object {
+        private const val KEY_PENDING_EMAIL = "pending_email_for_sign_in"
+    }
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
@@ -49,12 +51,13 @@ class LoginViewModel @Inject constructor(
      * Cập nhật email khi người dùng nhập
      */
     fun onEmailChange(email: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                email = email,
-                emailError = null, // Xóa lỗi khi người dùng bắt đầu nhập lại
-                generalError = null
-            )
+        _uiState.update { 
+            it.copy(
+                email = email, 
+                emailError = null, 
+                generalError = null,
+                successMessage = null
+            ) 
         }
     }
 
@@ -62,12 +65,12 @@ class LoginViewModel @Inject constructor(
      * Cập nhật mật khẩu khi người dùng nhập
      */
     fun onPasswordChange(password: String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                password = password,
-                passwordError = null,
+        _uiState.update { 
+            it.copy(
+                password = password, 
+                passwordError = null, 
                 generalError = null
-            )
+            ) 
         }
     }
 
@@ -75,20 +78,16 @@ class LoginViewModel @Inject constructor(
      * Cập nhật trạng thái ghi nhớ đăng nhập
      */
     fun onRememberMeChange(rememberMe: Boolean) {
-        _uiState.update { currentState ->
-            currentState.copy(rememberMe = rememberMe)
-        }
+        _uiState.update { it.copy(rememberMe = rememberMe) }
     }
 
     /**
      * Validate form đăng nhập
-     * @return true nếu form hợp lệ
      */
     private fun validateForm(): Boolean {
         val currentState = _uiState.value
         var isValid = true
 
-        // Validate email
         if (currentState.email.isBlank()) {
             _uiState.update { it.copy(emailError = "Vui lòng nhập email") }
             isValid = false
@@ -97,7 +96,6 @@ class LoginViewModel @Inject constructor(
             isValid = false
         }
 
-        // Validate password
         if (currentState.password.isBlank()) {
             _uiState.update { it.copy(passwordError = "Vui lòng nhập mật khẩu") }
             isValid = false
@@ -110,8 +108,7 @@ class LoginViewModel @Inject constructor(
     }
 
     /**
-     * Xử lý đăng nhập với email và mật khẩu
-     * Placeholder: Sẽ gọi API khi tích hợp backend
+     * Đăng nhập bằng Email/Password
      */
     fun onLoginClick() {
         if (!validateForm()) return
@@ -119,51 +116,76 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
 
-            try {
-                // TODO: Gọi API đăng nhập thực tế
-                // val result = authRepository.login(email, password)
-                
-                // Simulate network delay (placeholder)
-                delay(1500)
-
-                // Placeholder: Giả lập đăng nhập thành công
-                _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
-
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        generalError = "Đăng nhập thất bại. Vui lòng thử lại."
-                    ) 
+            authRepository.signInWithEmailPassword(_uiState.value.email, _uiState.value.password)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 }
-            }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = mapFirebaseError(exception)
+                        )
+                    }
+                }
         }
     }
 
     /**
-     * Xử lý đăng nhập với Google
-     * Placeholder: Sẽ tích hợp Google Sign-In SDK
+     * Đăng nhập bằng Google
+     * @param activity Activity context cần thiết cho Credential Manager
      */
-    fun onGoogleSignInClick() {
+    fun onGoogleSignInClick(activity: Activity) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
 
-            try {
-                // TODO: Tích hợp Google Sign-In
-                // val googleIdToken = googleSignInClient.signIn()
-                // val result = authRepository.loginWithGoogle(googleIdToken)
-                
-                delay(1500)
-                _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
-
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        generalError = "Đăng nhập với Google thất bại."
-                    ) 
+            authRepository.signInWithGoogle(activity)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 }
-            }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = "Đăng nhập Google thất bại: ${exception.localizedMessage}"
+                        )
+                    }
+                }
+        }
+    }
+
+    /**
+     * Gửi Email Link để đăng nhập (passwordless)
+     */
+    fun onSendEmailLinkClick() {
+        if (_uiState.value.email.isBlank() || 
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(_uiState.value.email).matches()) {
+            _uiState.update { it.copy(emailError = "Vui lòng nhập email hợp lệ") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
+
+            authRepository.sendSignInLinkToEmail(_uiState.value.email)
+                .onSuccess {
+                    savePendingEmail(_uiState.value.email)
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            emailLinkSent = true,
+                            successMessage = "Đã gửi link đăng nhập đến email của bạn!"
+                        ) 
+                    }
+                }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = "Gửi email thất bại: ${exception.localizedMessage}"
+                        )
+                    }
+                }
         }
     }
 
@@ -171,14 +193,73 @@ class LoginViewModel @Inject constructor(
      * Reset trạng thái sau khi navigate
      */
     fun onNavigateHandled() {
-        _uiState.update { it.copy(isLoginSuccess = false) }
+        _uiState.update { it.copy(isLoginSuccess = false, emailLinkSent = false) }
     }
 
     /**
      * Xử lý quên mật khẩu
-     * Placeholder: Sẽ navigate đến màn hình quên mật khẩu
      */
     fun onForgotPasswordClick() {
-        // TODO: Navigate to forgot password screen
+        if (_uiState.value.email.isBlank()) {
+            _uiState.update { it.copy(emailError = "Nhập email để đặt lại mật khẩu") }
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(_uiState.value.email).matches()) {
+            _uiState.update { it.copy(emailError = "Email không hợp lệ") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            authRepository.sendPasswordResetEmail(_uiState.value.email)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Đã gửi email đặt lại mật khẩu!"
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = mapFirebaseError(exception)
+                        )
+                    }
+                }
+        }
+    }
+
+    /**
+     * Lưu email đang chờ xác thực (cho Email Link)
+     */
+    private fun savePendingEmail(email: String) {
+        sharedPreferences.edit()
+            .putString(KEY_PENDING_EMAIL, email)
+            .apply()
+    }
+
+    /**
+     * Map Firebase error sang thông báo tiếng Việt
+     */
+    private fun mapFirebaseError(exception: Throwable): String {
+        return when {
+            exception.message?.contains("INVALID_LOGIN_CREDENTIALS") == true -> 
+                "Email hoặc mật khẩu không đúng"
+            exception.message?.contains("USER_NOT_FOUND") == true -> 
+                "Tài khoản không tồn tại"
+            exception.message?.contains("WRONG_PASSWORD") == true -> 
+                "Mật khẩu không đúng"
+            exception.message?.contains("TOO_MANY_REQUESTS") == true -> 
+                "Quá nhiều lần thử. Vui lòng thử lại sau."
+            exception.message?.contains("NETWORK") == true -> 
+                "Lỗi kết nối mạng"
+            exception.message?.contains("USER_DISABLED") == true ->
+                "Tài khoản đã bị vô hiệu hóa"
+            else -> "Đăng nhập thất bại. Vui lòng thử lại."
+        }
     }
 }
