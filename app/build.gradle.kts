@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -102,6 +103,18 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Firebase BoM (Bill of Materials) - đồng bộ phiên bản tất cả Firebase libraries
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth-ktx")
+    // Cloud Firestore
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Firebase Storage - lưu ảnh thuốc/avatar
+    implementation("com.google.firebase:firebase-storage-ktx")
+    // Firebase Analytics
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
 
     // ============================================
     // Room Database (Uncomment khi cần sử dụng)
