@@ -94,6 +94,9 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.4")
     implementation("androidx.camera:camera-view:1.3.4")
 
+    // ML Kit Barcode Scanning (cho tích hợp sau này)
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

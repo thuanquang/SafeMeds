@@ -13,6 +13,9 @@ sealed class AppDestination(val route: String) {
     object Home : AppDestination("home")
     object Map : AppDestination("map")
     object Scan : AppDestination("scan")
+    object ScanResult : AppDestination("scan_result/{scannedCode}") {
+        fun createRoute(scannedCode: String): String = "scan_result/$scannedCode"
+    }
     object Profile : AppDestination("profile")
     
     // Debug screen (chỉ dùng trong development)
