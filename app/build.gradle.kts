@@ -124,6 +124,11 @@ dependencies {
     // Google Play services auth (for Email Link authentication)
     implementation("com.google.android.gms:play-services-auth:21.4.0")
 
+    // Coil - Image loading for Compose (avatar display)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // ExifInterface - for image rotation handling
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     // ============================================
     // Room Database (Uncomment khi cần sử dụng)

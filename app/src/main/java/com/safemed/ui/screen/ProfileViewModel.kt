@@ -66,4 +66,11 @@ class ProfileViewModel @Inject constructor(
     fun onNavigateHandled() {
         _uiState.update { it.copy(isLogoutSuccess = false) }
     }
+
+    /**
+     * Clear error message
+     */
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
 }

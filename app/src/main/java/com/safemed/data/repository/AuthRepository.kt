@@ -258,6 +258,130 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    // ==================== PASSWORD MANAGEMENT ====================
+
+    /**
+     * Kiểm tra user có password provider hay không
+     * Google-only user sẽ không có password provider
+     */
+    fun hasPasswordProvider(): Boolean {
+        val user = auth.currentUser ?: return false
+        return user.providerData.any { it.providerId == "password" }
+    }
+
+    /**
+     * Kiểm tra user có Google provider hay không
+     */
+    fun hasGoogleProvider(): Boolean {
+        val user = auth.currentUser ?: return false
+        return user.providerData.any { it.providerId == "google.com" }
+    }
+
+    /**
+     * Re-authenticate với password trước khi thực hiện sensitive operations
+     * Required khi session quá cũ
+     */
+    suspend fun reauthenticateWithPassword(password: String): Result<Unit> {
+        val user = auth.currentUser ?: return Result.failure(Exception("User not logged in"))
+        val email = user.email ?: return Result.failure(Exception("User email not found"))
+        
+        return try {
+            val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(email, password)
+            user.reauthenticate(credential).await()
+            Log.d(TAG, "Re-authentication with password successful")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Re-authentication with password failed", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Re-authenticate với Google trước khi thực hiện sensitive operations
+     * Required cho Google-only users khi session quá cũ
+     */
+    suspend fun reauthenticateWithGoogle(activityContext: Activity): Result<Unit> {
+        return try {
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setServerClientId(context.getString(R.string.default_web_client_id))
+                .setFilterByAuthorizedAccounts(true) // Chỉ hiển thị account đã đăng nhập
+                .setAutoSelectEnabled(true)
+                .setNonce(generateNonce())
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            val credManager = CredentialManager.create(activityContext)
+            val result = credManager.getCredential(activityContext, request)
+            
+            // Lấy ID token từ result
+            val credential = result.credential
+            if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val firebaseCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
+                
+                auth.currentUser?.reauthenticate(firebaseCredential)?.await()
+                Log.d(TAG, "Re-authentication with Google successful")
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Invalid credential type"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Re-authentication with Google failed", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Link Email/Password credential cho Google user (đặt mật khẩu lần đầu)
+     * Cho phép Google user đăng nhập bằng cả email/password sau này
+     */
+    suspend fun linkEmailPassword(password: String): Result<Unit> {
+        val user = auth.currentUser ?: return Result.failure(Exception("User not logged in"))
+        val email = user.email ?: return Result.failure(Exception("User email not found"))
+        
+        // Kiểm tra đã có password provider chưa
+        if (hasPasswordProvider()) {
+            return Result.failure(Exception("User already has password. Use updatePassword instead."))
+        }
+        
+        return try {
+            val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(email, password)
+            user.linkWithCredential(credential).await()
+            Log.d(TAG, "Email/Password credential linked successfully")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to link Email/Password credential", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Đổi mật khẩu cho user đã có password provider
+     * Yêu cầu re-authenticate trước nếu session quá cũ
+     */
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        val user = auth.currentUser ?: return Result.failure(Exception("User not logged in"))
+        
+        if (!hasPasswordProvider()) {
+            return Result.failure(Exception("User does not have password. Use linkEmailPassword instead."))
+        }
+        
+        return try {
+            user.updatePassword(newPassword).await()
+            Log.d(TAG, "Password updated successfully")
+            Result.success(Unit)
+        } catch (e: com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
+            Log.w(TAG, "Recent login required for password update")
+            Result.failure(ReauthenticationRequiredException("Vui lòng đăng nhập lại để đổi mật khẩu"))
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update password", e)
+            Result.failure(e)
+        }
+    }
+
     // ==================== HELPER ====================
 
     private suspend fun saveUserToFirestore(firebaseUser: FirebaseUser, isNewUser: Boolean) {
@@ -285,3 +409,8 @@ class AuthRepository @Inject constructor(
         }
     }
 }
+
+/**
+ * Custom exception khi cần re-authenticate
+ */
+class ReauthenticationRequiredException(message: String) : Exception(message)
