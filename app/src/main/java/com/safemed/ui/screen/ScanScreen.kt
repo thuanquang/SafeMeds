@@ -2,8 +2,10 @@ package com.safemed.ui.screen
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -13,19 +15,23 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,9 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.safemed.scanner.HybridMedicineAnalyzer
+import com.safemed.scanner.ImageProcessor
+import com.safemed.scanner.ProcessingResult
+import com.safemed.scanner.ScanResult
+import com.safemed.scanner.ScanType
 import com.safemed.ui.theme.EmeraldGreen
 import com.safemed.ui.theme.SafeMedTheme
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 private const val TAG = "ScanScreen"
@@ -75,9 +87,10 @@ private val TextGray = Color(0xFF9CA3AF)
  * Trạng thái quét của màn hình
  */
 private enum class ScanState {
-    IDLE,       // Chờ người dùng nhấn nút
-    SCANNING,   // Đang quét (hiển thị loading)
-    COMPLETED   // Quét xong, chuyển màn hình
+    IDLE,               // Chờ camera tự động quét
+    SCANNING,           // Đang xác thực mã (hiển thị loading)
+    PROCESSING_IMAGE,   // Đang xử lý ảnh từ gallery
+    COMPLETED           // Quét xong, chuyển màn hình
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +100,7 @@ fun ScanScreen(
     onNavigateToResult: (String) -> Unit = {} // Callback với mã quét được
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     
     // Permission state - sử dụng native ActivityResultContracts
     var hasCameraPermission by remember {
@@ -108,14 +122,70 @@ fun ScanScreen(
 
     // Scan state
     var scanState by remember { mutableStateOf(ScanState.IDLE) }
+    
+    // Detected scan result
+    var detectedResult by remember { mutableStateOf<ScanResult?>(null) }
+    
+    // Detected code text to display
+    var detectedCodeText by remember { mutableStateOf<String?>(null) }
+    
+    // Flag để tạm dừng camera khi đang xử lý ảnh từ gallery
+    var isCameraPaused by remember { mutableStateOf(false) }
+    
+    // ImageProcessor cho xử lý ảnh từ gallery (shared logic)
+    val imageProcessor = remember { ImageProcessor() }
+    
+    // Launcher để chọn ảnh từ thư viện
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            Log.d(TAG, "Image selected from gallery: $selectedUri")
+            
+            // Tạm dừng camera và bắt đầu xử lý ảnh
+            isCameraPaused = true
+            scanState = ScanState.PROCESSING_IMAGE
+            
+            coroutineScope.launch {
+                processGalleryImage(
+                    context = context,
+                    uri = selectedUri,
+                    imageProcessor = imageProcessor,
+                    onResult = { result ->
+                        detectedResult = result
+                        isCameraPaused = false
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        scanState = ScanState.IDLE
+                        isCameraPaused = false
+                    }
+                )
+            }
+        }
+    }
+    
+    // Cleanup ImageProcessor khi Composable bị dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            imageProcessor.close()
+        }
+    }
 
-    // Xử lý simulate scan - delay 3 giây rồi navigate
-    LaunchedEffect(scanState) {
-        if (scanState == ScanState.SCANNING) {
-            delay(3000) // Đợi 3 giây
-            scanState = ScanState.COMPLETED
-            // Navigate với mã giả lập
-            onNavigateToResult("SAFEMED-DEMO-12345")
+    // Xử lý khi phát hiện mã - chuyển sang trạng thái SCANNING và sau đó navigate
+    LaunchedEffect(detectedResult) {
+        detectedResult?.let { result ->
+            if (scanState == ScanState.IDLE || scanState == ScanState.PROCESSING_IMAGE) {
+                scanState = ScanState.SCANNING
+                detectedCodeText = "${result.type.name}: ${result.code}"
+                
+                // Delay ngắn để hiển thị animation
+                kotlinx.coroutines.delay(1500)
+                
+                scanState = ScanState.COMPLETED
+                // Navigate với mã đã chuẩn hóa
+                onNavigateToResult(result.normalizedCode)
+            }
         }
     }
 
@@ -144,9 +214,13 @@ fun ScanScreen(
             ) {
                 // Kiểm tra quyền camera
                 if (hasCameraPermission) {
-                    // Đã có quyền - hiển thị camera preview
-                    CameraPreviewView(
-                        modifier = Modifier.fillMaxSize()
+                    // Đã có quyền - hiển thị camera preview với HybridScanner
+                    CameraPreviewWithScanner(
+                        modifier = Modifier.fillMaxSize(),
+                        isPaused = isCameraPaused,
+                        onScanResult = { result ->
+                            detectedResult = result
+                        }
                     )
                 } else {
                     // Chưa có quyền - hiển thị placeholder và thông báo
@@ -162,8 +236,8 @@ fun ScanScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Hiển thị loading khi đang quét
-                if (scanState == ScanState.SCANNING) {
+                // Hiển thị loading khi đang quét hoặc xử lý ảnh
+                if (scanState == ScanState.SCANNING || scanState == ScanState.PROCESSING_IMAGE) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -181,14 +255,32 @@ fun ScanScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Đang xác thực...",
+                                text = if (scanState == ScanState.PROCESSING_IMAGE) 
+                                    "Đang đọc ảnh..." else "Đang xác thực...",
                                 color = TextWhite,
                                 fontSize = 14.sp
                             )
+                            detectedCodeText?.let { code ->
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = code,
+                                    color = EmeraldGreen,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
             }
+            
+            // Nút Upload ảnh
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            GalleryUploadButton(
+                onClick = { galleryLauncher.launch("image/*") },
+                enabled = scanState == ScanState.IDLE
+            )
 
             // Spacing below camera view
             Spacer(modifier = Modifier.height(32.dp))
@@ -206,7 +298,7 @@ fun ScanScreen(
 
             // Instruction Body Text
             Text(
-                text = "Đặt camera phía trên mã vạch hoặc QR code\ntrên bao bì thuốc để xác thực",
+                text = "Đưa camera vào mã vạch hoặc số đăng ký (SĐK)\ntrên bao bì thuốc để xác thực tự động",
                 color = TextGray,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -214,31 +306,33 @@ fun ScanScreen(
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
 
-            // Spacer to push button to bottom
+            // Spacer to push status to bottom
             Spacer(modifier = Modifier.weight(1f))
 
-            // Action Button
-            Button(
-                onClick = {
-                    if (scanState == ScanState.IDLE) {
-                        scanState = ScanState.SCANNING
-                    }
-                },
-                enabled = scanState == ScanState.IDLE,
+            // Status indicator
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .height(56.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldGreen,
-                    contentColor = TextWhite,
-                    disabledContainerColor = EmeraldGreen.copy(alpha = 0.5f),
-                    disabledContentColor = TextWhite.copy(alpha = 0.5f)
-                )
+                    .height(56.dp)
+                    .background(
+                        color = when (scanState) {
+                            ScanState.IDLE -> EmeraldGreen.copy(alpha = 0.2f)
+                            ScanState.SCANNING, ScanState.PROCESSING_IMAGE -> EmeraldGreen.copy(alpha = 0.5f)
+                            ScanState.COMPLETED -> EmeraldGreen
+                        },
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (scanState == ScanState.SCANNING) "Đang quét..." else "Bắt đầu quét",
+                    text = when (scanState) {
+                        ScanState.IDLE -> "🔍 Đang tìm mã thuốc..."
+                        ScanState.PROCESSING_IMAGE -> "📷 Đang xử lý ảnh..."
+                        ScanState.SCANNING -> "⏳ Đang xác thực..."
+                        ScanState.COMPLETED -> "✅ Hoàn tất!"
+                    },
+                    color = TextWhite,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -251,18 +345,29 @@ fun ScanScreen(
 }
 
 /**
- * Camera Preview sử dụng CameraX
- * Được tách riêng để quản lý lifecycle tốt hơn
+ * Camera Preview với HybridMedicineAnalyzer
+ * Tích hợp Barcode Scanning + OCR Text Recognition
+ * 
+ * @param isPaused Tạm dừng camera khi đang xử lý ảnh từ gallery
  */
 @Composable
-private fun CameraPreviewView(
-    modifier: Modifier = Modifier
+private fun CameraPreviewWithScanner(
+    modifier: Modifier = Modifier,
+    isPaused: Boolean = false,
+    onScanResult: (ScanResult) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // Executor cho ImageAnalysis
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+    
+    // Hybrid Analyzer
+    val hybridAnalyzer = remember {
+        HybridMedicineAnalyzer { result ->
+            onScanResult(result)
+        }
+    }
 
     // Camera Provider state
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
@@ -285,6 +390,7 @@ private fun CameraPreviewView(
         onDispose {
             Log.d(TAG, "Disposing camera resources")
             cameraProvider?.unbindAll()
+            hybridAnalyzer.close()
             cameraExecutor.shutdown()
         }
     }
@@ -303,6 +409,13 @@ private fun CameraPreviewView(
         modifier = modifier,
         update = { previewView ->
             cameraProvider?.let { provider ->
+                // Nếu đang pause, unbind tất cả để tiết kiệm tài nguyên
+                if (isPaused) {
+                    provider.unbindAll()
+                    Log.d(TAG, "Camera paused for gallery processing")
+                    return@let
+                }
+                
                 try {
                     // Unbind tất cả use cases trước khi bind mới
                     provider.unbindAll()
@@ -314,32 +427,13 @@ private fun CameraPreviewView(
                             it.setSurfaceProvider(previewView.surfaceProvider)
                         }
 
-                    // ImageAnalysis use case (khung sườn cho ML Kit)
+                    // ImageAnalysis với HybridMedicineAnalyzer
                     val imageAnalysis = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setTargetRotation(previewView.display?.rotation ?: android.view.Surface.ROTATION_0)
                         .build()
                         .also { analysis ->
-                            analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                                // TODO: Tích hợp ML Kit Barcode Scanning ở đây
-                                // Khung sườn cho việc xử lý barcode:
-                                // val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                                // val mediaImage = imageProxy.image
-                                // if (mediaImage != null) {
-                                //     val inputImage = InputImage.fromMediaImage(mediaImage, rotationDegrees)
-                                //     barcodeScanner.process(inputImage)
-                                //         .addOnSuccessListener { barcodes ->
-                                //             for (barcode in barcodes) {
-                                //                 // Xử lý barcode được quét
-                                //             }
-                                //         }
-                                //         .addOnCompleteListener {
-                                //             imageProxy.close()
-                                //         }
-                                // }
-                                
-                                // Tạm thời chỉ close imageProxy
-                                imageProxy.close()
-                            }
+                            analysis.setAnalyzer(cameraExecutor, hybridAnalyzer)
                         }
 
                     // Chọn camera sau (back camera)
@@ -353,7 +447,7 @@ private fun CameraPreviewView(
                         imageAnalysis
                     )
 
-                    Log.d(TAG, "Camera use cases bound successfully")
+                    Log.d(TAG, "Camera with HybridScanner bound successfully")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to bind camera use cases", e)
                 }
@@ -397,6 +491,89 @@ private fun CameraPermissionPlaceholder(
                     color = TextWhite
                 )
             }
+        }
+    }
+}
+
+/**
+ * Nút tải ảnh từ thư viện
+ */
+@Composable
+private fun GalleryUploadButton(
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = EmeraldGreen.copy(alpha = 0.15f),
+            contentColor = EmeraldGreen,
+            disabledContainerColor = Color.Gray.copy(alpha = 0.1f),
+            disabledContentColor = Color.Gray
+        ),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .height(48.dp)
+            .border(
+                width = 1.dp,
+                color = if (enabled) EmeraldGreen.copy(alpha = 0.5f) else Color.Gray.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(24.dp)
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Default.PhotoLibrary,
+            contentDescription = "Chọn ảnh từ thư viện",
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Tải ảnh lên",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+/**
+ * Xử lý ảnh từ thư viện
+ * 
+ * @param context Context để đọc file
+ * @param uri URI của ảnh được chọn
+ * @param imageProcessor ImageProcessor dùng chung
+ * @param onResult Callback khi tìm thấy mã hợp lệ
+ * @param onError Callback khi có lỗi hoặc không tìm thấy mã
+ */
+private suspend fun processGalleryImage(
+    context: android.content.Context,
+    uri: Uri,
+    imageProcessor: ImageProcessor,
+    onResult: (ScanResult) -> Unit,
+    onError: (String) -> Unit
+) {
+    Log.d(TAG, "Processing gallery image: $uri")
+    
+    // Tạo InputImage từ URI
+    val inputImage = imageProcessor.createInputImageFromUri(context, uri)
+    
+    if (inputImage == null) {
+        onError("Không thể đọc ảnh. Vui lòng chọn ảnh khác.")
+        return
+    }
+    
+    // Xử lý ảnh với shared logic
+    when (val result = imageProcessor.processImage(inputImage)) {
+        is ProcessingResult.Success -> {
+            Log.d(TAG, "Gallery image processed successfully: ${result.scanResult.code}")
+            onResult(result.scanResult)
+        }
+        is ProcessingResult.NotFound -> {
+            Log.d(TAG, "No valid code found in gallery image")
+            onError("Không tìm thấy thông tin thuốc trong ảnh này.\nVui lòng chọn ảnh rõ nét hơn có chứa mã vạch hoặc số đăng ký (SĐK).")
+        }
+        is ProcessingResult.Error -> {
+            Log.e(TAG, "Error processing gallery image: ${result.message}", result.exception)
+            onError("Lỗi xử lý ảnh: ${result.message}")
         }
     }
 }
