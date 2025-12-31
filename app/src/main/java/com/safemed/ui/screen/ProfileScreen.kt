@@ -93,7 +93,13 @@ fun ProfileScreen(
             ProfileHeader(
                 displayName = uiState.displayName.ifEmpty { currentUser?.displayName ?: guestText },
                 email = uiState.email.ifEmpty { currentUser?.email ?: "" },
-                avatarUrl = uiState.avatarUrl ?: currentUser?.photoUrl?.toString(),
+                // Prioritize Firestore avatar over Google avatar to show custom uploads
+                // Only use Google avatar as fallback if Firestore has no avatar
+                avatarUrl = if (uiState.avatarUrl.isNullOrEmpty()) {
+                    currentUser?.photoUrl?.toString()
+                } else {
+                    uiState.avatarUrl
+                },
                 onNavigateBack = onNavigateBack
             )
 

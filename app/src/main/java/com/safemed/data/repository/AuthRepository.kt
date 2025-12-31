@@ -468,10 +468,10 @@ class AuthRepository @Inject constructor(
                 )
                 userDoc.set(user).await()
             } else {
+                // Only update email to preserve custom fullName and avatar
+                // User can update their name via UpdateProfile screen if needed
                 val updates = hashMapOf<String, Any>(
-                    "email" to (firebaseUser.email ?: ""),
-                    "fullName" to (firebaseUser.displayName ?: ""),
-                    "avatarUrl" to (firebaseUser.photoUrl?.toString() ?: "")
+                    "email" to (firebaseUser.email ?: "")
                 )
                 userDoc.update(updates).await()
             }
