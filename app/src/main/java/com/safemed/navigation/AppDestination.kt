@@ -1,10 +1,21 @@
 package com.safemed.navigation
 
+/**
+ * Sealed class định nghĩa các điểm đến (destinations) trong ứng dụng
+ * Mỗi object đại diện cho một màn hình với route tương ứng
+ */
 sealed class AppDestination(val route: String) {
-    data object Login : AppDestination("login")
-    data object Home : AppDestination("home")
-    data object Map : AppDestination("map")
-    data object Scan : AppDestination("scan")
-    data object Profile : AppDestination("profile")
+    // Auth screens
+    object Login : AppDestination("login")
+    object Register : AppDestination("register")
+    
+    // Main screens
+    object Home : AppDestination("home")
+    object Map : AppDestination("map")
+    object Scan : AppDestination("scan")
+    object Profile : AppDestination("profile")
+    
+    // Debug screen (chỉ dùng trong development)
+    object Debug : AppDestination("debug")
 }
 

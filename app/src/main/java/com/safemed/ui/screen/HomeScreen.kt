@@ -3,52 +3,102 @@ package com.safemed.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.ExperimentalMaterial3Api // Import this for ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToMap: () -> Unit,
     onNavigateToScan: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToDebug: () -> Unit = {} // Thêm tham số mới
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(text = "Home") })
-        }
-    ) { padding ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "🏠 SafeMed",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Text(
+            text = "Ứng dụng tra cứu thuốc an toàn",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(48.dp))
+        
+        // Main Action Buttons
+        Button(
+            onClick = onNavigateToScan,
             modifier = Modifier
-                .padding(padding)
-                .padding(24.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.Start
+                .fillMaxWidth()
+                .height(56.dp)
         ) {
-            Text(
-                text = "SafeMed home",
-                style = MaterialTheme.typography.headlineMedium
+            Text("📷 Quét mã thuốc", style = MaterialTheme.typography.titleMedium)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Button(
+            onClick = onNavigateToMap,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
             )
-            Text(
-                text = "Hook up real content later. Navigate to feature placeholders below.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = onNavigateToMap) { Text("Map") }
-                Button(onClick = onNavigateToScan) { Text("Scan") }
-                Button(onClick = onNavigateToProfile) { Text("Profile") }
+        ) {
+            Text("🗺️ Tìm nhà thuốc", style = MaterialTheme.typography.titleMedium)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        OutlinedButton(
+            onClick = onNavigateToProfile,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text("👤 Hồ sơ cá nhân", style = MaterialTheme.typography.titleMedium)
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // Debug Button (chỉ hiển thị trong development)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = onNavigateToDebug,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.tertiary
+                )
+            ) {
+                Text("🛠️ Debug Tools")
             }
         }
     }

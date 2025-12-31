@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SafeMed</string>
+
+    <!-- Firebase Google Sign-In: Web Client ID từ Google Cloud Console -->
+    <!-- Thay YOUR_WEB_CLIENT_ID bằng Web Client ID thực từ Firebase Console -->
+    <string name="default_web_client_id">207631267510-6nsgidm9npqv5cbbc3dr9peq4rcascd9.apps.googleusercontent.com</string>
+
     <string name="lorem_short">Lorem ipsum dolor sit amet</string>
     <string name="btn_start_scan">Bắt đầu quét</string>
     <string name="btn_finish_scan">Hoàn thành quét</string>
