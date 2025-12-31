@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.safemed.data.repository.AuthRepository
+import com.safemed.data.repository.FirebaseHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +38,8 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val firebaseHelper: FirebaseHelper
 ) : ViewModel() {
 
     companion object {
@@ -118,6 +120,8 @@ class LoginViewModel @Inject constructor(
 
             authRepository.signInWithEmailPassword(_uiState.value.email, _uiState.value.password)
                 .onSuccess {
+                    // Save login history
+                    firebaseHelper.saveLoginHistory()
                     _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 }
                 .onFailure { exception ->
@@ -141,6 +145,8 @@ class LoginViewModel @Inject constructor(
 
             authRepository.signInWithGoogle(activity)
                 .onSuccess {
+                    // Save login history
+                    firebaseHelper.saveLoginHistory()
                     _uiState.update { it.copy(isLoading = false, isLoginSuccess = true) }
                 }
                 .onFailure { exception ->

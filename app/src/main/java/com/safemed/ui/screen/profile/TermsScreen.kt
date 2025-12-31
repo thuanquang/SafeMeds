@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.safemed.R
 import com.safemed.ui.theme.EmeraldGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,10 +23,10 @@ fun TermsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Điều khoản và chính sách") },
+                title = { Text(stringResource(R.string.terms_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

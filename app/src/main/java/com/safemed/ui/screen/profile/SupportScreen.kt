@@ -14,8 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.safemed.R
 import com.safemed.ui.theme.EmeraldGreen
 
 data class FAQ(
@@ -64,10 +66,10 @@ fun SupportScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Trung tâm hỗ trợ") },
+                title = { Text(stringResource(R.string.support_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -88,7 +90,7 @@ fun SupportScreen(
             // Contact options
             item {
                 Text(
-                    text = "Liên hệ hỗ trợ",
+                    text = stringResource(R.string.support_contact),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = EmeraldGreen
@@ -143,7 +145,7 @@ fun SupportScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Câu hỏi thường gặp",
+                    text = stringResource(R.string.support_faq),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = EmeraldGreen
@@ -164,7 +166,7 @@ fun SupportScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Góp ý & Phản hồi",
+                    text = stringResource(R.string.support_feedback),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = EmeraldGreen

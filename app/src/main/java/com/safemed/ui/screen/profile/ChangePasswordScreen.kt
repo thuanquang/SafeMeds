@@ -15,12 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.safemed.R
 import com.safemed.ui.component.ReauthDialog
 import com.safemed.ui.theme.EmeraldGreen
 
@@ -75,12 +77,12 @@ fun ChangePasswordScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        if (uiState.hasPasswordProvider) "Đổi mật khẩu" else "Đặt mật khẩu"
+                        if (uiState.hasPasswordProvider) stringResource(R.string.change_password_title) else stringResource(R.string.change_password_set_password)
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -112,9 +114,9 @@ fun ChangePasswordScreen(
             // Title and description
             Text(
                 text = if (uiState.hasPasswordProvider) {
-                    "Đổi mật khẩu"
+                    stringResource(R.string.change_password_title)
                 } else {
-                    "Đặt mật khẩu cho tài khoản"
+                    stringResource(R.string.change_password_set_password)
                 },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
@@ -123,9 +125,9 @@ fun ChangePasswordScreen(
 
             Text(
                 text = if (uiState.hasPasswordProvider) {
-                    "Nhập mật khẩu hiện tại và mật khẩu mới để thay đổi."
+                    stringResource(R.string.change_password_desc_change)
                 } else {
-                    "Bạn đang đăng nhập bằng Google. Đặt mật khẩu để có thể đăng nhập bằng email và mật khẩu."
+                    stringResource(R.string.change_password_desc_set)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -151,7 +153,7 @@ fun ChangePasswordScreen(
                         OutlinedTextField(
                             value = uiState.currentPassword,
                             onValueChange = viewModel::onCurrentPasswordChange,
-                            label = { Text("Mật khẩu hiện tại") },
+                            label = { Text(stringResource(R.string.change_password_current)) },
                             singleLine = true,
                             enabled = !uiState.isLoading,
                             visualTransformation = if (currentPasswordVisible) {
@@ -183,7 +185,7 @@ fun ChangePasswordScreen(
                     OutlinedTextField(
                         value = uiState.newPassword,
                         onValueChange = viewModel::onNewPasswordChange,
-                        label = { Text("Mật khẩu mới") },
+                        label = { Text(stringResource(R.string.change_password_new)) },
                         singleLine = true,
                         enabled = !uiState.isLoading,
                         visualTransformation = if (newPasswordVisible) {
@@ -204,7 +206,7 @@ fun ChangePasswordScreen(
                             }
                         },
                         supportingText = {
-                            Text("Mật khẩu phải có ít nhất 6 ký tự")
+                            Text(stringResource(R.string.change_password_hint_min))
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -217,7 +219,7 @@ fun ChangePasswordScreen(
                     OutlinedTextField(
                         value = uiState.confirmPassword,
                         onValueChange = viewModel::onConfirmPasswordChange,
-                        label = { Text("Xác nhận mật khẩu") },
+                        label = { Text(stringResource(R.string.change_password_confirm)) },
                         singleLine = true,
                         enabled = !uiState.isLoading,
                         isError = uiState.confirmPassword.isNotEmpty() && 
@@ -243,7 +245,7 @@ fun ChangePasswordScreen(
                             if (uiState.confirmPassword.isNotEmpty() && 
                                 uiState.newPassword != uiState.confirmPassword) {
                                 Text(
-                                    "Mật khẩu không khớp",
+                                    stringResource(R.string.change_password_error_mismatch),
                                     color = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -281,10 +283,10 @@ fun ChangePasswordScreen(
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Đang xử lý...")
+                    Text(stringResource(R.string.processing))
                 } else {
                     Text(
-                        text = if (uiState.hasPasswordProvider) "Đổi mật khẩu" else "Đặt mật khẩu",
+                        text = if (uiState.hasPasswordProvider) stringResource(R.string.change_password_title) else stringResource(R.string.change_password_set_password),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )

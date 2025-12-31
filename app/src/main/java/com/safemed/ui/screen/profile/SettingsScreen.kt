@@ -1,10 +1,13 @@
 package com.safemed.ui.screen.profile
 
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -13,32 +16,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.safemed.R
 import com.safemed.ui.component.ProfileMenuItemWithSwitch
 import com.safemed.ui.theme.EmeraldGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    // States for toggles
-    var isDarkMode by remember { mutableStateOf(false) }
-    var notificationEnabled by remember { mutableStateOf(true) }
-    var soundEnabled by remember { mutableStateOf(true) }
-    var vibrationEnabled by remember { mutableStateOf(true) }
-    var autoSaveHistory by remember { mutableStateOf(true) }
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    
     var showLanguageDialog by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf("Tiếng Việt") }
+
+    // Show snackbar messages
+    LaunchedEffect(uiState.message) {
+        uiState.message?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cài đặt") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -47,148 +60,215 @@ fun SettingsScreen(
                     navigationIconContentColor = Color.White
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // ===== Giao diện =====
-            SettingsSectionHeader(title = "Giao diện")
-            
-            SettingsItem(
-                icon = Icons.Outlined.Language,
-                title = "Ngôn ngữ",
-                subtitle = selectedLanguage,
-                onClick = { showLanguageDialog = true }
-            )
-            
-            ProfileMenuItemWithSwitch(
-                icon = Icons.Outlined.DarkMode,
-                title = "Chế độ tối",
-                checked = isDarkMode,
-                onCheckedChange = { isDarkMode = it }
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // ===== Giao diện =====
+                SettingsSectionHeader(title = stringResource(R.string.settings_appearance))
+                
+                SettingsItem(
+                    icon = Icons.Outlined.Language,
+                    title = stringResource(R.string.settings_language),
+                    subtitle = viewModel.getLanguageDisplayName(),
+                    onClick = { showLanguageDialog = true }
+                )
+                
+                ProfileMenuItemWithSwitch(
+                    icon = Icons.Outlined.DarkMode,
+                    title = stringResource(R.string.settings_dark_mode),
+                    checked = uiState.isDarkMode,
+                    onCheckedChange = { viewModel.toggleDarkMode(it) }
+                )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // ===== Thông báo =====
-            SettingsSectionHeader(title = "Thông báo")
+                // ===== Thông báo =====
+                SettingsSectionHeader(title = stringResource(R.string.settings_notifications))
 
-            ProfileMenuItemWithSwitch(
-                icon = Icons.Outlined.Notifications,
-                title = "Thông báo đẩy",
-                checked = notificationEnabled,
-                onCheckedChange = { notificationEnabled = it }
-            )
+                ProfileMenuItemWithSwitch(
+                    icon = Icons.Outlined.Notifications,
+                    title = stringResource(R.string.settings_push_notifications),
+                    checked = uiState.notificationEnabled,
+                    onCheckedChange = { viewModel.toggleNotification(it) }
+                )
 
-            ProfileMenuItemWithSwitch(
-                icon = Icons.Outlined.VolumeUp,
-                title = "Âm thanh thông báo",
-                checked = soundEnabled,
-                onCheckedChange = { soundEnabled = it }
-            )
+                ProfileMenuItemWithSwitch(
+                    icon = Icons.AutoMirrored.Outlined.VolumeUp,
+                    title = stringResource(R.string.settings_sound),
+                    checked = uiState.soundEnabled,
+                    onCheckedChange = { viewModel.toggleSound(it) }
+                )
 
-            ProfileMenuItemWithSwitch(
-                icon = Icons.Outlined.Vibration,
-                title = "Rung thông báo",
-                checked = vibrationEnabled,
-                onCheckedChange = { vibrationEnabled = it }
-            )
+                ProfileMenuItemWithSwitch(
+                    icon = Icons.Outlined.Vibration,
+                    title = stringResource(R.string.settings_vibration),
+                    checked = uiState.vibrationEnabled,
+                    onCheckedChange = { viewModel.toggleVibration(it) }
+                )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // ===== Quét & Lịch sử =====
-            SettingsSectionHeader(title = "Quét & Lịch sử")
+                // ===== Quét & Lịch sử =====
+                SettingsSectionHeader(title = stringResource(R.string.settings_data))
 
-            ProfileMenuItemWithSwitch(
-                icon = Icons.Outlined.History,
-                title = "Tự động lưu lịch sử quét",
-                checked = autoSaveHistory,
-                onCheckedChange = { autoSaveHistory = it }
-            )
+                ProfileMenuItemWithSwitch(
+                    icon = Icons.Outlined.History,
+                    title = stringResource(R.string.settings_auto_save_history),
+                    checked = uiState.autoSaveHistory,
+                    onCheckedChange = { viewModel.toggleAutoSaveHistory(it) }
+                )
 
-            SettingsItem(
-                icon = Icons.Outlined.DeleteSweep,
-                title = "Xóa lịch sử quét",
-                subtitle = "Xóa tất cả lịch sử quét thuốc",
-                onClick = { /* TODO: Show confirmation dialog */ }
-            )
+                SettingsItem(
+                    icon = Icons.Outlined.DeleteSweep,
+                    title = stringResource(R.string.settings_clear_history),
+                    subtitle = "",
+                    onClick = { viewModel.showClearHistoryDialog() }
+                )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // ===== Bộ nhớ & Cache =====
-            SettingsSectionHeader(title = "Bộ nhớ")
+                // ===== Bộ nhớ & Cache =====
+                SettingsSectionHeader(title = stringResource(R.string.settings_other))
 
-            SettingsItem(
-                icon = Icons.Outlined.CleaningServices,
-                title = "Xóa bộ nhớ đệm",
-                subtitle = "Giải phóng dung lượng ứng dụng",
-                onClick = { /* TODO: Clear cache */ }
-            )
+                SettingsItem(
+                    icon = Icons.Outlined.CleaningServices,
+                    title = stringResource(R.string.settings_clear_cache),
+                    subtitle = stringResource(R.string.settings_cache_size, uiState.cacheSize),
+                    onClick = { viewModel.showClearCacheDialog() }
+                )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // ===== Về ứng dụng =====
-            SettingsSectionHeader(title = "Về ứng dụng")
+                // ===== Về ứng dụng =====
+                SettingsSectionHeader(title = stringResource(R.string.settings_other))
 
-            SettingsItem(
-                icon = Icons.Outlined.Info,
-                title = "Phiên bản",
-                subtitle = "1.0.0 (Build 1)",
-                onClick = { }
-            )
+                SettingsItem(
+                    icon = Icons.Outlined.Info,
+                    title = stringResource(R.string.settings_app_version),
+                    subtitle = "1.0.0 (Build 1)",
+                    onClick = { }
+                )
 
-            SettingsItem(
-                icon = Icons.Outlined.Star,
-                title = "Đánh giá ứng dụng",
-                subtitle = "Đánh giá SafeMed trên Play Store",
-                onClick = { /* TODO: Open Play Store */ }
-            )
+                SettingsItem(
+                    icon = Icons.Outlined.Star,
+                    title = stringResource(R.string.settings_rate_app),
+                    subtitle = "",
+                    onClick = { 
+                        context.startActivity(viewModel.getRateIntent())
+                    }
+                )
 
-            SettingsItem(
-                icon = Icons.Outlined.Share,
-                title = "Chia sẻ ứng dụng",
-                subtitle = "Giới thiệu SafeMed cho bạn bè",
-                onClick = { /* TODO: Share app */ }
-            )
+                val shareTitle = stringResource(R.string.settings_share_app)
+                SettingsItem(
+                    icon = Icons.Outlined.Share,
+                    title = shareTitle,
+                    subtitle = "",
+                    onClick = { 
+                        context.startActivity(Intent.createChooser(viewModel.getShareIntent(), shareTitle))
+                    }
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Loading indicator
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = EmeraldGreen
+                )
+            }
         }
     }
 
     // Language Selection Dialog
     if (showLanguageDialog) {
+        val activity = context as? Activity
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
-            title = { Text("Chọn ngôn ngữ") },
+            title = { Text(stringResource(R.string.settings_select_language)) },
             text = {
                 Column {
                     LanguageOption(
-                        language = "Tiếng Việt",
+                        language = stringResource(R.string.settings_language_vietnamese),
                         flag = "🇻🇳",
-                        isSelected = selectedLanguage == "Tiếng Việt",
+                        isSelected = uiState.language == "vi",
                         onClick = {
-                            selectedLanguage = "Tiếng Việt"
+                            viewModel.setLanguage("vi")
                             showLanguageDialog = false
+                            // Recreate activity to apply language change
+                            activity?.recreate()
                         }
                     )
                     LanguageOption(
-                        language = "English",
+                        language = stringResource(R.string.settings_language_english),
                         flag = "🇺🇸",
-                        isSelected = selectedLanguage == "English",
+                        isSelected = uiState.language == "en",
                         onClick = {
-                            selectedLanguage = "English"
+                            viewModel.setLanguage("en")
                             showLanguageDialog = false
+                            // Recreate activity to apply language change
+                            activity?.recreate()
                         }
                     )
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showLanguageDialog = false }) {
-                    Text("Đóng", color = EmeraldGreen)
+                    Text(stringResource(R.string.btn_close), color = EmeraldGreen)
+                }
+            }
+        )
+    }
+
+    // Clear History Confirmation Dialog
+    if (uiState.showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissClearHistoryDialog() },
+            icon = { Icon(Icons.Outlined.DeleteSweep, contentDescription = null, tint = Color.Red) },
+            title = { Text(stringResource(R.string.settings_clear_history)) },
+            text = { Text(stringResource(R.string.settings_confirm_clear_history)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.clearScanHistory() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) {
+                    Text(stringResource(R.string.btn_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissClearHistoryDialog() }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
+    }
+
+    // Clear Cache Confirmation Dialog
+    if (uiState.showClearCacheDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissClearCacheDialog() },
+            icon = { Icon(Icons.Outlined.CleaningServices, contentDescription = null, tint = EmeraldGreen) },
+            title = { Text(stringResource(R.string.settings_clear_cache)) },
+            text = { Text(stringResource(R.string.settings_confirm_clear_cache)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.clearCache() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = EmeraldGreen)
+                ) {
+                    Text(stringResource(R.string.btn_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissClearCacheDialog() }) {
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         )

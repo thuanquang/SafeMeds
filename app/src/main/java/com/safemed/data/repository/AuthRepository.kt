@@ -382,6 +382,77 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    // ==================== DELETE ACCOUNT ====================
+
+    /**
+     * Xóa tài khoản người dùng hoàn toàn
+     * - Xóa data trong Firestore (profile, scan history)
+     * - Xóa Firebase Auth account
+     * QUAN TRỌNG: Có thể yêu cầu re-authenticate nếu phiên đăng nhập đã cũ
+     */
+    suspend fun deleteAccount(): Result<Unit> {
+        return try {
+            val user = auth.currentUser
+            if (user == null) {
+                return Result.failure(Exception("Không có người dùng đăng nhập"))
+            }
+
+            val userId = user.uid
+
+            // 1. Xóa scan history
+            try {
+                val scanHistoryRef = db.collection("users").document(userId)
+                    .collection("scan_history")
+                val scanHistoryDocs = scanHistoryRef.get().await()
+                for (doc in scanHistoryDocs.documents) {
+                    doc.reference.delete().await()
+                }
+                Log.d(TAG, "Deleted scan history for user: $userId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to delete scan history", e)
+                // Continue anyway
+            }
+
+            // 2. Xóa login history
+            try {
+                val loginHistoryRef = db.collection("users").document(userId)
+                    .collection("login_history")
+                val loginHistoryDocs = loginHistoryRef.get().await()
+                for (doc in loginHistoryDocs.documents) {
+                    doc.reference.delete().await()
+                }
+                Log.d(TAG, "Deleted login history for user: $userId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to delete login history", e)
+                // Continue anyway
+            }
+
+            // 3. Xóa user profile document
+            try {
+                db.collection(USERS_COLLECTION).document(userId).delete().await()
+                Log.d(TAG, "Deleted user profile: $userId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to delete user profile", e)
+                // Continue anyway
+            }
+
+            // 4. Xóa Firebase Auth account
+            user.delete().await()
+            Log.d(TAG, "Deleted Firebase Auth account: $userId")
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete account", e)
+            // Check if re-authentication is required
+            if (e.message?.contains("requires-recent-login") == true ||
+                e.message?.contains("CREDENTIAL_TOO_OLD_LOGIN_AGAIN") == true) {
+                Result.failure(ReauthenticationRequiredException("Cần đăng nhập lại để xóa tài khoản"))
+            } else {
+                Result.failure(e)
+            }
+        }
+    }
+
     // ==================== HELPER ====================
 
     private suspend fun saveUserToFirestore(firebaseUser: FirebaseUser, isNewUser: Boolean) {

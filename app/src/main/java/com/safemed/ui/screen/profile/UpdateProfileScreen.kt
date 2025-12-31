@@ -2,10 +2,13 @@ package com.safemed.ui.screen.profile
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,14 +27,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.safemed.R
 import com.safemed.ui.theme.EmeraldGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +87,7 @@ fun UpdateProfileScreen(
     // Handle success navigation
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            snackbarHostState.showSnackbar("Cập nhật thành công!")
+            snackbarHostState.showSnackbar(context.getString(R.string.update_profile_success))
             viewModel.onNavigateHandled()
             onNavigateBack()
         }
@@ -98,10 +104,10 @@ fun UpdateProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cập nhật thông tin") },
+                title = { Text(stringResource(R.string.update_profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -164,7 +170,37 @@ fun UpdateProfileScreen(
                                     contentScale = ContentScale.Crop
                                 )
                             }
+                            uiState.avatarUrl.isNotEmpty() && uiState.avatarUrl.startsWith("data:image") -> {
+                                // Base64 image
+                                val bitmap = remember(uiState.avatarUrl) {
+                                    try {
+                                        val base64Data = uiState.avatarUrl.substringAfter("base64,")
+                                        val imageBytes = Base64.decode(base64Data, Base64.DEFAULT)
+                                        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                }
+                                if (bitmap != null) {
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(60.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                             uiState.avatarUrl.isNotEmpty() -> {
+                                // HTTP URL image
                                 AsyncImage(
                                     model = ImageRequest.Builder(context)
                                         .data(uiState.avatarUrl)
@@ -222,7 +258,7 @@ fun UpdateProfileScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Đổi ảnh")
+                        Text(stringResource(R.string.update_profile_change_photo))
                     }
 
                     if (uiState.avatarUrl.isNotEmpty() || uiState.selectedImageUri != null) {
@@ -244,7 +280,7 @@ fun UpdateProfileScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Xóa ảnh")
+                            Text(stringResource(R.string.update_profile_remove_photo))
                         }
                     }
                 }
@@ -260,8 +296,8 @@ fun UpdateProfileScreen(
                     OutlinedTextField(
                         value = uiState.fullName,
                         onValueChange = viewModel::onFullNameChange,
-                        label = { Text("Họ và tên") },
-                        placeholder = { Text("Nhập họ và tên") },
+                        label = { Text(stringResource(R.string.update_profile_fullname)) },
+                        placeholder = { Text(stringResource(R.string.update_profile_fullname_hint)) },
                         singleLine = true,
                         enabled = !uiState.isSaving,
                         modifier = Modifier.fillMaxWidth(),
@@ -275,12 +311,12 @@ fun UpdateProfileScreen(
                     OutlinedTextField(
                         value = uiState.user?.email ?: "",
                         onValueChange = {},
-                        label = { Text("Email") },
+                        label = { Text(stringResource(R.string.update_profile_email)) },
                         enabled = false,
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
                         supportingText = {
-                            Text("Email không thể thay đổi")
+                            Text(stringResource(R.string.update_profile_email_readonly))
                         }
                     )
                 }
@@ -307,13 +343,13 @@ fun UpdateProfileScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = if (uiState.isUploadingAvatar) "Đang tải ảnh..." else "Đang lưu...",
+                            text = stringResource(R.string.processing),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                     } else {
                         Text(
-                            text = "Lưu thay đổi",
+                            text = stringResource(R.string.btn_save),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )

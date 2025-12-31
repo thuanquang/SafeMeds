@@ -1,5 +1,6 @@
 package com.safemed.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -11,6 +12,8 @@ import com.safemed.data.model.ScanHistory
 import com.safemed.data.model.User
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "FirebaseHelper"
 
 /**
  * Firebase Helper class (Repository Pattern)
@@ -201,6 +204,176 @@ class FirebaseHelper @Inject constructor() {
             .document(historyId)
             .delete()
             .addOnSuccessListener { onComplete(true) }
+            .addOnFailureListener { onComplete(false) }
+    }
+
+    /**
+     * Xóa tất cả lịch sử quét của người dùng hiện tại
+     */
+    fun deleteScanHistory(onComplete: (Boolean) -> Unit) {
+        val userId = getCurrentUserId() ?: run {
+            onComplete(false)
+            return
+        }
+        
+        db.collection("scan_history")
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { docs ->
+                if (docs.isEmpty) {
+                    onComplete(true)
+                    return@addOnSuccessListener
+                }
+                
+                val batch = db.batch()
+                for (doc in docs.documents) {
+                    batch.delete(doc.reference)
+                }
+                batch.commit()
+                    .addOnSuccessListener { onComplete(true) }
+                    .addOnFailureListener { onComplete(false) }
+            }
+            .addOnFailureListener { onComplete(false) }
+    }
+
+    // ==================== LOGIN HISTORY (Lịch sử đăng nhập) ====================
+
+    /**
+     * Lưu lịch sử đăng nhập
+     * @param deviceInfo Thông tin thiết bị (tên, model, OS version)
+     */
+    fun saveLoginHistory(
+        deviceName: String = android.os.Build.MODEL,
+        location: String = "Unknown",
+        onComplete: (Boolean) -> Unit = {}
+    ) {
+        val userId = getCurrentUserId()
+        Log.d(TAG, "saveLoginHistory called - userId: $userId")
+        
+        if (userId == null) {
+            Log.e(TAG, "saveLoginHistory failed - user not logged in")
+            onComplete(false)
+            return
+        }
+        
+        val loginData = hashMapOf(
+            "deviceName" to deviceName,
+            "deviceModel" to android.os.Build.MODEL,
+            "manufacturer" to android.os.Build.MANUFACTURER,
+            "osVersion" to "Android ${android.os.Build.VERSION.RELEASE}",
+            "location" to location,
+            "timestamp" to System.currentTimeMillis(),
+            "isCurrent" to true
+        )
+        
+        Log.d(TAG, "Saving login data: $loginData")
+        
+        // Mark all previous logins as not current
+        db.collection("users")
+            .document(userId)
+            .collection("login_history")
+            .whereEqualTo("isCurrent", true)
+            .get()
+            .addOnSuccessListener { docs ->
+                Log.d(TAG, "Found ${docs.size()} previous current logins")
+                val batch = db.batch()
+                for (doc in docs.documents) {
+                    batch.update(doc.reference, "isCurrent", false)
+                }
+                
+                // Add new login record
+                val newLoginRef = db.collection("users")
+                    .document(userId)
+                    .collection("login_history")
+                    .document()
+                batch.set(newLoginRef, loginData)
+                
+                batch.commit()
+                    .addOnSuccessListener { 
+                        Log.d(TAG, "Login history saved successfully")
+                        onComplete(true) 
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Failed to commit login history batch", e)
+                        onComplete(false) 
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to query previous logins, saving directly", e)
+                // Still try to save the new login
+                db.collection("users")
+                    .document(userId)
+                    .collection("login_history")
+                    .add(loginData)
+                    .addOnSuccessListener { 
+                        Log.d(TAG, "Login history saved successfully (fallback)")
+                        onComplete(true) 
+                    }
+                    .addOnFailureListener { e2 ->
+                        Log.e(TAG, "Failed to save login history (fallback)", e2)
+                        onComplete(false) 
+                    }
+            }
+    }
+
+    /**
+     * Lấy lịch sử đăng nhập của người dùng hiện tại
+     */
+    fun getLoginHistory(onResult: (List<Map<String, Any>>) -> Unit) {
+        val userId = getCurrentUserId()
+        Log.d(TAG, "getLoginHistory called - userId: $userId")
+        
+        if (userId == null) {
+            Log.e(TAG, "getLoginHistory failed - user not logged in")
+            onResult(emptyList())
+            return
+        }
+        
+        db.collection("users")
+            .document(userId)
+            .collection("login_history")
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(20)
+            .get()
+            .addOnSuccessListener { docs ->
+                Log.d(TAG, "getLoginHistory success - found ${docs.size()} records")
+                val history = docs.documents.mapNotNull { it.data }
+                onResult(history)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "getLoginHistory failed", e)
+                onResult(emptyList())
+            }
+    }
+
+    /**
+     * Xóa tất cả các phiên đăng nhập khác (đăng xuất từ xa)
+     */
+    fun logoutOtherDevices(onComplete: (Boolean) -> Unit) {
+        val userId = getCurrentUserId() ?: run {
+            onComplete(false)
+            return
+        }
+        
+        db.collection("users")
+            .document(userId)
+            .collection("login_history")
+            .whereEqualTo("isCurrent", false)
+            .get()
+            .addOnSuccessListener { docs ->
+                if (docs.isEmpty) {
+                    onComplete(true)
+                    return@addOnSuccessListener
+                }
+                
+                val batch = db.batch()
+                for (doc in docs.documents) {
+                    batch.delete(doc.reference)
+                }
+                batch.commit()
+                    .addOnSuccessListener { onComplete(true) }
+                    .addOnFailureListener { onComplete(false) }
+            }
             .addOnFailureListener { onComplete(false) }
     }
 }

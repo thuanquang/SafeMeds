@@ -98,11 +98,11 @@ class UpdateProfileViewModel @Inject constructor(
                     
                     _uiState.update { it.copy(isUploadingAvatar = false) }
                     
-                    uploadResult.getOrElse {
-                        _uiState.update {
-                            it.copy(
+                    uploadResult.getOrElse { exception ->
+                        _uiState.update { currentState ->
+                            currentState.copy(
                                 isSaving = false,
-                                errorMessage = "Upload ảnh thất bại: ${it.errorMessage}"
+                                errorMessage = "Upload ảnh thất bại: ${exception.message ?: "Lỗi không xác định"}"
                             )
                         }
                         return@launch

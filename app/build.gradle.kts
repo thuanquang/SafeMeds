@@ -130,6 +130,9 @@ dependencies {
     // ExifInterface - for image rotation handling
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
+    // Biometric - for fingerprint/face authentication
+    implementation("androidx.biometric:biometric:1.1.0")
+
     // ============================================
     // Room Database (Uncomment khi cần sử dụng)
     // ============================================

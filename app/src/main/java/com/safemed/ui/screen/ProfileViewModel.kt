@@ -3,6 +3,7 @@ package com.safemed.ui.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.safemed.data.repository.AuthRepository
+import com.safemed.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,10 @@ import javax.inject.Inject
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val isLogoutSuccess: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val avatarUrl: String? = null, // Avatar from Firestore
+    val displayName: String = "",
+    val email: String = ""
 )
 
 /**
@@ -26,11 +30,45 @@ data class ProfileUiState(
  */
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+    init {
+        loadProfile()
+    }
+
+    /**
+     * Load user profile from Firestore
+     */
+    fun loadProfile() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            
+            profileRepository.getCurrentUserProfile()
+                .onSuccess { user ->
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            avatarUrl = user?.avatarUrl,
+                            displayName = user?.fullName ?: "",
+                            email = user?.email ?: ""
+                        ) 
+                    }
+                }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = exception.localizedMessage
+                        )
+                    }
+                }
+        }
+    }
 
     /**
      * Đăng xuất người dùng

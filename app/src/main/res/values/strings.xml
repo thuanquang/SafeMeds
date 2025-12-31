@@ -3,16 +3,194 @@
     <string name="app_name">SafeMed</string>
 
     <!-- Firebase Google Sign-In: Web Client ID từ Google Cloud Console -->
-    <!-- Thay YOUR_WEB_CLIENT_ID bằng Web Client ID thực từ Firebase Console -->
     <string name="default_web_client_id">207631267510-6nsgidm9npqv5cbbc3dr9peq4rcascd9.apps.googleusercontent.com</string>
 
-    <string name="lorem_short">Lorem ipsum dolor sit amet</string>
-    <string name="btn_start_scan">Bắt đầu quét</string>
-    <string name="btn_finish_scan">Hoàn thành quét</string>
-    <string name="btn_login">Đăng nhập</string>
-    <string name="btn_register">Đăng ký tài khoản</string>
+    <!-- Common -->
+    <string name="loading">Đang tải…</string>
+    <string name="error">Lỗi</string>
+    <string name="success">Thành công</string>
+    <string name="back">Quay lại</string>
+    <string name="btn_cancel">Hủy</string>
+    <string name="btn_delete">Xóa</string>
+    <string name="btn_close">Đóng</string>
+    <string name="btn_confirm">Xác nhận</string>
+    <string name="btn_save">Lưu</string>
+    <string name="btn_send">Gửi</string>
     <string name="btn_contact">Liên hệ</string>
     <string name="btn_download_app">Tải ứng dụng</string>
+    <string name="processing">Đang xử lý…</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">Đăng nhập</string>
+    <string name="login_email">Email</string>
+    <string name="login_email_hint">Nhập email của bạn</string>
+    <string name="login_password">Mật khẩu</string>
+    <string name="login_password_hint">Nhập mật khẩu</string>
+    <string name="login_remember_me">Ghi nhớ đăng nhập</string>
+    <string name="login_forgot_password">Quên mật khẩu?</string>
+    <string name="btn_login">Đăng nhập</string>
+    <string name="login_or">hoặc</string>
+    <string name="login_with_google">Đăng nhập với Google</string>
+    <string name="login_no_account">Chưa có tài khoản?</string>
+    <string name="login_register_now">Đăng ký ngay</string>
+    <string name="login_error_email_required">Vui lòng nhập email</string>
+    <string name="login_error_email_invalid">Email không hợp lệ</string>
+    <string name="login_error_password_required">Vui lòng nhập mật khẩu</string>
+    <string name="login_error_password_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Đăng ký tài khoản</string>
+    <string name="register_fullname">Họ và tên</string>
+    <string name="register_fullname_hint">Nhập họ và tên</string>
+    <string name="register_email">Email</string>
+    <string name="register_email_hint">Nhập email của bạn</string>
+    <string name="register_password">Mật khẩu</string>
+    <string name="register_password_hint">Nhập mật khẩu</string>
+    <string name="register_confirm_password">Xác nhận mật khẩu</string>
+    <string name="register_confirm_password_hint">Nhập lại mật khẩu</string>
+    <string name="btn_register">Đăng ký</string>
+    <string name="register_have_account">Đã có tài khoản?</string>
+    <string name="register_login_now">Đăng nhập</string>
+    <string name="register_password_mismatch">Mật khẩu không khớp</string>
+    <string name="register_success">Đăng ký thành công!</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Trang chủ</string>
+    <string name="home_scan_medicine">📷 Quét mã thuốc</string>
+    <string name="home_find_pharmacy">🗺️ Tìm nhà thuốc</string>
+    <string name="home_welcome">Xin chào, %1$s!</string>
+    <string name="home_profile">👤 Hồ sơ cá nhân</string>
+    <string name="app_slogan">Ứng dụng tra cứu thuốc an toàn</string>
+
+    <!-- Scan Screen -->
+    <string name="scan_title">📷 Quét mã thuốc</string>
+    <string name="btn_start_scan">Bắt đầu quét</string>
+    <string name="btn_finish_scan">Hoàn thành quét</string>
+    <string name="scan_instruction">Hướng camera vào mã vạch hoặc QR code trên hộp thuốc</string>
+    <string name="scan_result">Kết quả quét</string>
+    <string name="scan_no_result">Không tìm thấy thông tin thuốc</string>
+
+    <!-- Map Screen -->
+    <string name="map_title">🗺️ Tìm nhà thuốc</string>
+    <string name="map_search_hint">Tìm nhà thuốc gần bạn</string>
+    <string name="map_no_pharmacy">Không tìm thấy nhà thuốc</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Hồ sơ</string>
+    <string name="profile_update_info">Cập nhật thông tin cá nhân</string>
+    <string name="profile_scan_history">Lịch sử scan</string>
+    <string name="profile_security">Bảo mật nâng cao</string>
+    <string name="profile_terms">Điều khoản và chính sách</string>
+    <string name="profile_support">Trung tâm chăm sóc</string>
+    <string name="profile_change_password">Đổi mật khẩu</string>
+    <string name="profile_settings">Cài đặt</string>
+    <string name="profile_logout">Đăng xuất</string>
+    <string name="profile_go_home">Về trang chủ</string>
+    <string name="profile_guest">Người dùng</string>
+
+    <!-- Update Profile Screen -->
+    <string name="update_profile_title">Cập nhật thông tin</string>
+    <string name="update_profile_change_photo">Đổi ảnh</string>
+    <string name="update_profile_remove_photo">Xóa ảnh</string>
+    <string name="update_profile_fullname">Họ và tên</string>
+    <string name="update_profile_fullname_hint">Nhập họ và tên</string>
+    <string name="update_profile_email">Email</string>
+    <string name="update_profile_email_readonly">Email không thể thay đổi</string>
+    <string name="update_profile_success">Cập nhật thành công!</string>
+    <string name="update_profile_upload_failed">Upload ảnh thất bại: %1$s</string>
+
+    <!-- Change Password Screen -->
+    <string name="change_password_title">Đổi mật khẩu</string>
+    <string name="change_password_set_password">Đặt mật khẩu</string>
+    <string name="change_password_current">Mật khẩu hiện tại</string>
+    <string name="change_password_new">Mật khẩu mới</string>
+    <string name="change_password_confirm">Xác nhận mật khẩu</string>
+    <string name="change_password_hint_min">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="change_password_error_mismatch">Mật khẩu không khớp</string>
+    <string name="change_password_success">Đổi mật khẩu thành công!</string>
+    <string name="change_password_error_current">Mật khẩu hiện tại không đúng</string>
+    <string name="change_password_desc_change">Nhập mật khẩu hiện tại và mật khẩu mới để thay đổi.</string>
+    <string name="change_password_desc_set">Bạn đang đăng nhập bằng Google. Đặt mật khẩu để có thể đăng nhập bằng email và mật khẩu.</string>
+
+    <!-- Terms Screen -->
+    <string name="terms_title">Điều khoản và chính sách</string>
+    <string name="terms_intro">Chào mừng bạn đến với SafeMed! Bằng việc sử dụng ứng dụng, bạn đồng ý với các điều khoản sau:</string>
+    <string name="terms_section_1_title">1. Điều khoản sử dụng</string>
+    <string name="terms_section_1_content">SafeMed cung cấp thông tin tham khảo về thuốc. Thông tin không thay thế tư vấn y tế chuyên nghiệp.</string>
+    <string name="terms_section_2_title">2. Chính sách bảo mật</string>
+    <string name="terms_section_2_content">Chúng tôi cam kết bảo vệ thông tin cá nhân của bạn theo quy định pháp luật.</string>
+    <string name="terms_section_3_title">3. Quyền sở hữu trí tuệ</string>
+    <string name="terms_section_3_content">Tất cả nội dung trong ứng dụng thuộc quyền sở hữu của SafeMed.</string>
+
+    <!-- Support Screen -->
+    <string name="support_title">Trung tâm hỗ trợ</string>
+    <string name="support_faq">Câu hỏi thường gặp</string>
+    <string name="support_contact">Liên hệ hỗ trợ</string>
+    <string name="support_feedback">Góp ý</string>
+    <string name="support_feedback_hint">Nhập nội dung góp ý…</string>
+    <string name="support_send_feedback">Gửi góp ý</string>
+    <string name="support_feedback_success">Cảm ơn góp ý của bạn!</string>
+    <string name="support_email">Email: support@safemed.vn</string>
+    <string name="support_phone">Hotline: 1900-xxxx</string>
+    <string name="support_hours">Thời gian: 8:00 - 22:00 (Thứ 2 - CN)</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_appearance">Giao diện</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_dark_mode">Chế độ tối</string>
+    <string name="settings_notifications">Thông báo</string>
+    <string name="settings_push_notifications">Thông báo đẩy</string>
+    <string name="settings_sound">Âm thanh</string>
+    <string name="settings_vibration">Rung</string>
+    <string name="settings_data">Dữ liệu</string>
+    <string name="settings_auto_save_history">Tự động lưu lịch sử quét</string>
+    <string name="settings_clear_history">Xóa lịch sử quét</string>
+    <string name="settings_clear_cache">Xóa bộ nhớ đệm</string>
+    <string name="settings_cache_size">%1$s đang sử dụng</string>
+    <string name="settings_other">Khác</string>
+    <string name="settings_share_app">Chia sẻ ứng dụng</string>
+    <string name="settings_rate_app">Đánh giá ứng dụng</string>
+    <string name="settings_app_version">Phiên bản ứng dụng</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_select_language">Chọn ngôn ngữ</string>
+    <string name="settings_confirm_clear_history">Bạn có chắc chắn muốn xóa toàn bộ lịch sử quét?</string>
+    <string name="settings_confirm_clear_cache">Bạn có chắc chắn muốn xóa bộ nhớ đệm?</string>
+    <string name="settings_clear_history_success">Đã xóa lịch sử quét</string>
+    <string name="settings_clear_cache_success">Đã xóa bộ nhớ đệm</string>
+
+    <!-- Security Screen -->
+    <string name="security_title">Bảo mật nâng cao</string>
+    <string name="security_authentication">Xác thực</string>
+    <string name="security_biometric">Xác thực sinh trắc học</string>
+    <string name="security_biometric_desc">Đăng nhập bằng vân tay hoặc khuôn mặt</string>
+    <string name="security_2fa">Xác thực 2 yếu tố</string>
+    <string name="security_2fa_desc">Thêm lớp bảo mật qua SMS/Email</string>
+    <string name="security_login_notification">Thông báo đăng nhập</string>
+    <string name="security_login_notification_desc">Nhận thông báo khi có đăng nhập mới</string>
+    <string name="security_session">Phiên đăng nhập</string>
+    <string name="security_login_history">Lịch sử đăng nhập</string>
+    <string name="security_login_history_desc">Xem các lần đăng nhập gần đây</string>
+    <string name="security_devices">Thiết bị đã đăng nhập</string>
+    <string name="security_devices_desc">Quản lý thiết bị đang hoạt động</string>
+    <string name="security_danger">Vùng nguy hiểm</string>
+    <string name="security_delete_account">Xóa tài khoản</string>
+    <string name="security_delete_account_desc">Xóa vĩnh viễn tài khoản và dữ liệu</string>
+    <string name="security_delete_confirm_title">Xóa tài khoản?</string>
+    <string name="security_delete_confirm_message">Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.</string>
+    <string name="security_biometric_available">Có thể sử dụng</string>
+    <string name="security_biometric_not_available">Thiết bị không hỗ trợ</string>
+    <string name="security_no_data">Không có thông tin</string>
+    <string name="security_current_device">Thiết bị hiện tại</string>
+    <string name="security_logout_all">Đăng xuất tất cả</string>
+    <string name="security_2fa_developing">Tính năng đang được phát triển</string>
+
+    <!-- Reauth Dialog -->
+    <string name="reauth_title">Xác thực lại</string>
+    <string name="reauth_password">Mật khẩu</string>
+    <string name="reauth_with_password">Xác thực bằng mật khẩu</string>
+    <string name="reauth_with_google">🔐 Xác thực bằng Google</string>
 </resources>
 
 

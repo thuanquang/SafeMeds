@@ -221,10 +221,10 @@ fun GoogleSignInButton(
             .height(52.dp),
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Outline),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
         Row(

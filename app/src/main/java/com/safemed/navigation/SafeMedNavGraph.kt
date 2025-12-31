@@ -138,7 +138,12 @@ fun SafeMedNavGraph(
         // Màn hình bảo mật nâng cao
         composable(AppDestination.Security.route) {
             SecurityScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onAccountDeleted = {
+                    navController.navigate(AppDestination.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
