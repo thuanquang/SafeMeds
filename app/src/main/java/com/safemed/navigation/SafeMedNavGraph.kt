@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.safemed.ui.screen.DebugScreen
+import com.safemed.ui.screen.HistoryScreen
 import com.safemed.ui.screen.HomeScreen
 import com.safemed.ui.screen.LoginScreen
 import com.safemed.ui.screen.MapScreen
@@ -84,6 +85,9 @@ fun SafeMedNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResult = { scannedCode ->
                     navController.navigate(AppDestination.ScanResult.createRoute(scannedCode))
+                },
+                onNavigateToHistory = {
+                    navController.navigate(AppDestination.History.route)
                 }
             )
         }
@@ -92,7 +96,11 @@ fun SafeMedNavGraph(
         composable(
             route = AppDestination.ScanResult.route,
             arguments = listOf(
-                navArgument("scannedCode") { type = NavType.StringType }
+                navArgument("scannedCode") { type = NavType.StringType },
+                navArgument("fromHistory") { 
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
             )
         ) { backStackEntry ->
             val scannedCode = backStackEntry.arguments?.getString("scannedCode") ?: ""
@@ -106,6 +114,20 @@ fun SafeMedNavGraph(
                 onGoHome = {
                     // Pop về Home screen
                     navController.popBackStack(AppDestination.Home.route, inclusive = false)
+                },
+                onNavigateToHistory = {
+                    navController.navigate(AppDestination.History.route)
+                }
+            )
+        }
+
+        // Màn hình lịch sử quét
+        composable(AppDestination.History.route) {
+            HistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { scannedCode ->
+                    // fromHistory = true để không tạo duplicate history
+                    navController.navigate(AppDestination.ScanResult.createRoute(scannedCode, fromHistory = true))
                 }
             )
         }

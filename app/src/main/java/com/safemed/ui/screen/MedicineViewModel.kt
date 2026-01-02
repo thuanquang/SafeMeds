@@ -1,9 +1,11 @@
 package com.safemed.ui.screen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.safemed.data.model.Medicine
+import com.safemed.data.repository.HistoryRepository
 import com.safemed.data.repository.MedicineRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,14 +65,25 @@ data class ScanResultUiState(
 @HiltViewModel
 class MedicineViewModel @Inject constructor(
     private val medicineRepository: MedicineRepository,
+    private val historyRepository: HistoryRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "MedicineViewModel"
+    }
 
     private val _uiState = MutableStateFlow(ScanResultUiState())
     val uiState: StateFlow<ScanResultUiState> = _uiState.asStateFlow()
 
+    // Flag để đảm bảo chỉ lưu lịch sử 1 lần - persist across navigation
+    private var historySaved = false
+
     // Lấy scannedCode từ navigation argument
     private val scannedCode: String = savedStateHandle.get<String>("scannedCode") ?: ""
+    
+    // Kiểm tra xem đang xem lại từ History hay quét mới
+    private val fromHistory: Boolean = savedStateHandle.get<Boolean>("fromHistory") ?: false
 
     init {
         // Tự động tra cứu khi ViewModel được khởi tạo
@@ -111,20 +124,28 @@ class MedicineViewModel @Inject constructor(
                 .onSuccess { medicine ->
                     val verificationTime = getCurrentTimeFormatted()
                     
-                    _uiState.update {
-                        it.copy(
-                            lookupState = if (medicine != null) {
-                                MedicineLookupState.Success(
+                    if (medicine != null) {
+                        _uiState.update {
+                            it.copy(
+                                lookupState = MedicineLookupState.Success(
                                     medicine = medicine,
                                     verificationTime = verificationTime
                                 )
-                            } else {
-                                MedicineLookupState.NotFound(
+                            )
+                        }
+                        // Tự động lưu vào lịch sử
+                        saveToHistoryIfNeeded(medicine, normalizedCode)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                lookupState = MedicineLookupState.NotFound(
                                     scannedCode = normalizedCode,
                                     verificationTime = verificationTime
                                 )
-                            }
-                        )
+                            )
+                        }
+                        // Lưu vào lịch sử với kết quả not_found
+                        saveNotFoundToHistoryIfNeeded(normalizedCode)
                     }
                 }
                 .onFailure { exception ->
@@ -136,6 +157,64 @@ class MedicineViewModel @Inject constructor(
                             )
                         )
                     }
+                }
+        }
+    }
+
+    /**
+     * Lưu thuốc đã xác thực thành công vào lịch sử (chỉ 1 lần)
+     * Bỏ qua nếu đang xem lại từ History
+     */
+    private fun saveToHistoryIfNeeded(medicine: Medicine, scannedCode: String) {
+        // Không lưu nếu đang xem lại từ History
+        if (fromHistory) {
+            Log.d(TAG, "Viewing from history, skipping save...")
+            return
+        }
+        
+        if (historySaved) {
+            Log.d(TAG, "History already saved, skipping...")
+            return
+        }
+        
+        historySaved = true
+        viewModelScope.launch {
+            historyRepository.addToHistory(medicine, scannedCode)
+                .onSuccess { historyId ->
+                    Log.d(TAG, "History saved successfully: $historyId")
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Error saving history", error)
+                    historySaved = false // Reset để có thể thử lại
+                }
+        }
+    }
+
+    /**
+     * Lưu thuốc không tìm thấy vào lịch sử (chỉ 1 lần)
+     * Bỏ qua nếu đang xem lại từ History
+     */
+    private fun saveNotFoundToHistoryIfNeeded(scannedCode: String) {
+        // Không lưu nếu đang xem lại từ History
+        if (fromHistory) {
+            Log.d(TAG, "Viewing from history, skipping save...")
+            return
+        }
+        
+        if (historySaved) {
+            Log.d(TAG, "History already saved, skipping...")
+            return
+        }
+        
+        historySaved = true
+        viewModelScope.launch {
+            historyRepository.addNotFoundToHistory(scannedCode)
+                .onSuccess { historyId ->
+                    Log.d(TAG, "NotFound history saved successfully: $historyId")
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Error saving not found history", error)
+                    historySaved = false // Reset để có thể thử lại
                 }
         }
     }

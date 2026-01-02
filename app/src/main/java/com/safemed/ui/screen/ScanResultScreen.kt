@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -71,9 +72,13 @@ fun ScanResultScreen(
     onNavigateBack: () -> Unit = {},
     onScanAgain: () -> Unit = {},
     onGoHome: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
     viewModel: MedicineViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    // History được lưu tự động trong MedicineViewModel khi lookup hoàn tất
+    // Không cần LaunchedEffect ở đây nữa để tránh duplicate
 
     Scaffold(
         topBar = {
@@ -128,7 +133,8 @@ fun ScanResultScreen(
                         scannedCode = uiState.scannedCode,
                         verificationTime = state.verificationTime,
                         onScanAgain = onScanAgain,
-                        onGoHome = onGoHome
+                        onGoHome = onGoHome,
+                        onNavigateToHistory = onNavigateToHistory
                     )
                 }
 
@@ -138,7 +144,8 @@ fun ScanResultScreen(
                         scannedCode = state.scannedCode,
                         verificationTime = state.verificationTime,
                         onScanAgain = onScanAgain,
-                        onGoHome = onGoHome
+                        onGoHome = onGoHome,
+                        onNavigateToHistory = onNavigateToHistory
                     )
                 }
 
@@ -149,7 +156,8 @@ fun ScanResultScreen(
                         scannedCode = state.scannedCode,
                         onRetry = { viewModel.retry() },
                         onScanAgain = onScanAgain,
-                        onGoHome = onGoHome
+                        onGoHome = onGoHome,
+                        onNavigateToHistory = onNavigateToHistory
                     )
                 }
             }
@@ -201,7 +209,8 @@ private fun SuccessContent(
     scannedCode: String,
     verificationTime: String,
     onScanAgain: () -> Unit,
-    onGoHome: () -> Unit
+    onGoHome: () -> Unit,
+    onNavigateToHistory: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -227,7 +236,8 @@ private fun SuccessContent(
         // Action Buttons
         ActionButtons(
             onScanAgain = onScanAgain,
-            onGoHome = onGoHome
+            onGoHome = onGoHome,
+            onNavigateToHistory = onNavigateToHistory
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -242,7 +252,8 @@ private fun NotFoundContent(
     scannedCode: String,
     verificationTime: String,
     onScanAgain: () -> Unit,
-    onGoHome: () -> Unit
+    onGoHome: () -> Unit,
+    onNavigateToHistory: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -297,7 +308,8 @@ private fun NotFoundContent(
         // Action Buttons
         ActionButtons(
             onScanAgain = onScanAgain,
-            onGoHome = onGoHome
+            onGoHome = onGoHome,
+            onNavigateToHistory = onNavigateToHistory
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -313,7 +325,8 @@ private fun ErrorContent(
     scannedCode: String,
     onRetry: () -> Unit,
     onScanAgain: () -> Unit,
-    onGoHome: () -> Unit
+    onGoHome: () -> Unit,
+    onNavigateToHistory: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -422,7 +435,8 @@ private fun ErrorContent(
         // Action Buttons
         ActionButtons(
             onScanAgain = onScanAgain,
-            onGoHome = onGoHome
+            onGoHome = onGoHome,
+            onNavigateToHistory = onNavigateToHistory
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -772,7 +786,8 @@ private fun DetailRow(
 @Composable
 private fun ActionButtons(
     onScanAgain: () -> Unit,
-    onGoHome: () -> Unit
+    onGoHome: () -> Unit,
+    onNavigateToHistory: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -797,9 +812,9 @@ private fun ActionButtons(
             )
         }
 
-        // Secondary Button - Về trang chủ
+        // Secondary Button - Xem lại lịch sử
         OutlinedButton(
-            onClick = onGoHome,
+            onClick = onNavigateToHistory,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -808,10 +823,34 @@ private fun ActionButtons(
                 contentColor = EmeraldGreen
             )
         ) {
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Về trang chủ",
+                text = "Xem lại lịch sử",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        // Tertiary Button - Về trang chủ
+        OutlinedButton(
+            onClick = onGoHome,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.Gray
+            )
+        ) {
+            Text(
+                text = "Về trang chủ",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
             )
         }
     }

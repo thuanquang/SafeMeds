@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -97,7 +98,8 @@ private enum class ScanState {
 @Composable
 fun ScanScreen(
     onNavigateBack: () -> Unit = {},
-    onNavigateToResult: (String) -> Unit = {} // Callback với mã quét được
+    onNavigateToResult: (String) -> Unit = {}, // Callback với mã quét được
+    onNavigateToHistory: () -> Unit = {} // Callback điều hướng tới History
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -191,7 +193,10 @@ fun ScanScreen(
 
     Scaffold(
         topBar = {
-            ScanScreenTopBar(onNavigateBack = onNavigateBack)
+            ScanScreenTopBar(
+                onNavigateBack = onNavigateBack,
+                onNavigateToHistory = onNavigateToHistory
+            )
         },
         containerColor = ScanScreenBackground
     ) { padding ->
@@ -581,7 +586,8 @@ private suspend fun processGalleryImage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScanScreenTopBar(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToHistory: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -605,6 +611,16 @@ private fun ScanScreenTopBar(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = Color.Black
+                )
+            }
+        },
+        actions = {
+            // Nút History
+            IconButton(onClick = onNavigateToHistory) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = "Lịch sử quét",
+                    tint = EmeraldGreen
                 )
             }
         },
