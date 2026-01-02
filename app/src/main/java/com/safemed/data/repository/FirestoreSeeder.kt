@@ -108,66 +108,76 @@ class FirestoreSeeder @Inject constructor() {
 
     /**
      * Thêm dữ liệu mẫu thuốc (có barcode thật để test scanner)
+     * LƯU Ý: Dữ liệu mẫu này chỉ dùng cho development/testing
+     * Dữ liệu thực tế sẽ được import từ CSDL Bộ Y tế
+     * 
+     * Lưu ý: SDK trên Firestore lưu dạng VDxxxxxx (không có dấu -)
      */
     suspend fun seedMedicines(): Result<Unit> {
         val medicines = listOf(
             Medicine(
-                medicineId = "med_001",
-                name = "Panadol Extra",
-                brand = "GSK (GlaxoSmithKline)",
+                sdk = "VD1234520",
                 barcode = "8934868010012",
-                isAuthentic = true,
-                imageUrl = "https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_09829_6a6298b3ae.jpg"
+                tenThuoc = "Panadol Extra",
+                hoatChat = "Paracetamol, Caffeine",
+                hamLuong = "500mg, 65mg",
+                dangBaoChe = "Viên nén",
+                quyCach = "Hộp 12 vỉ x 10 viên",
+                hanSdSdk = "31/12/2028",
+                nhaSanXuat = "GSK Consumer Healthcare",
+                nuocSanXuat = "Việt Nam",
+                tuoiTho = "36 tháng"
             ),
             Medicine(
-                medicineId = "med_002",
-                name = "Vitamin C 500mg",
-                brand = "DHG Pharma",
+                sdk = "VD2345621",
                 barcode = "8936067690015",
-                isAuthentic = true,
-                imageUrl = "https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/00030194_vitamin_c_500mg_dhg_100v_7622_6282_large_93dd6282fa.jpg"
+                tenThuoc = "Vitamin C 500mg",
+                hoatChat = "Acid Ascorbic",
+                hamLuong = "500mg",
+                dangBaoChe = "Viên nén",
+                quyCach = "Hộp 10 vỉ x 10 viên",
+                hanSdSdk = "31/12/2027",
+                nhaSanXuat = "DHG Pharma",
+                nuocSanXuat = "Việt Nam",
+                tuoiTho = "24 tháng"
             ),
             Medicine(
-                medicineId = "med_003",
-                name = "Efferalgan 500mg",
-                brand = "Sanofi",
+                sdk = "VN3456722",
                 barcode = "8935049000123",
-                isAuthentic = true,
-                imageUrl = "https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/00501236_efferalgan_500mg_upsa_16v_7198_6093_large_a39379bdb0.jpg"
+                tenThuoc = "Efferalgan 500mg",
+                hoatChat = "Paracetamol",
+                hamLuong = "500mg",
+                dangBaoChe = "Viên sủi",
+                quyCach = "Tuýp 10 viên",
+                hanSdSdk = "31/12/2026",
+                nhaSanXuat = "UPSA SAS",
+                nuocSanXuat = "Pháp",
+                tuoiTho = "36 tháng"
             ),
             Medicine(
-                medicineId = "med_004",
-                name = "Hapacol 650mg",
-                brand = "DHG Pharma",
+                sdk = "VD4567823",
                 barcode = "8936067690022",
-                isAuthentic = true,
-                imageUrl = "https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/00030382_hapacol_650_dhg_10vi_x_10vien_1588_6157_large_e4c3c2caec.jpg"
-            ),
-            Medicine(
-                medicineId = "med_005",
-                name = "Thuốc giả - Panadol Fake",
-                brand = "Unknown",
-                barcode = "0000000000000",
-                isAuthentic = false,
-                imageUrl = ""
-            ),
-            Medicine(
-                medicineId = "med_006",
-                name = "Thuốc nghi ngờ - Test Product",
-                brand = "Không rõ nguồn gốc",
-                barcode = "1111111111111",
-                isAuthentic = false,
-                imageUrl = ""
+                tenThuoc = "Hapacol 650mg",
+                hoatChat = "Paracetamol",
+                hamLuong = "650mg",
+                dangBaoChe = "Viên nén",
+                quyCach = "Hộp 10 vỉ x 10 viên",
+                hanSdSdk = "31/12/2029",
+                nhaSanXuat = "DHG Pharma",
+                nuocSanXuat = "Việt Nam",
+                tuoiTho = "36 tháng"
             )
         )
 
         return try {
             medicines.forEach { medicine ->
+                // Sử dụng SDK hoặc barcode làm document ID
+                val docId = medicine.sdk.ifBlank { medicine.barcode }.ifBlank { "unknown_${System.currentTimeMillis()}" }
                 db.collection("medicines")
-                    .document(medicine.medicineId)
+                    .document(docId)
                     .set(medicine)
                     .await()
-                Log.d(TAG, "Added medicine: ${medicine.name}")
+                Log.d(TAG, "Added medicine: ${medicine.tenThuoc}")
             }
             Log.d(TAG, "Seeded ${medicines.size} medicines")
             Result.success(Unit)
