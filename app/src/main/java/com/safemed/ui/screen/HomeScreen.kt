@@ -16,9 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.safemed.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +45,7 @@ fun HomeScreen(
         )
         
         Text(
-            text = "Ứng dụng tra cứu thuốc an toàn",
+            text = stringResource(R.string.app_slogan),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -57,7 +59,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text("📷 Quét mã thuốc", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.home_scan_medicine), style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -71,7 +73,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.secondary
             )
         ) {
-            Text("🗺️ Tìm nhà thuốc", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.home_find_pharmacy), style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +84,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text("👤 Hồ sơ cá nhân", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.home_profile), style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(32.dp))

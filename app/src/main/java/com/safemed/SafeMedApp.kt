@@ -13,8 +13,10 @@ import com.safemed.navigation.SafeMedNavGraph
 import com.safemed.ui.theme.SafeMedTheme
 
 @Composable
-fun SafeMedApp() {
-    SafeMedTheme {
+fun SafeMedApp(
+    isDarkMode: Boolean = false
+) {
+    SafeMedTheme(darkTheme = isDarkMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             val navController = rememberNavController()
             

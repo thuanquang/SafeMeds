@@ -16,6 +16,12 @@ import com.safemed.ui.screen.ProfileScreen
 import com.safemed.ui.screen.RegisterScreen
 import com.safemed.ui.screen.ScanResultScreen
 import com.safemed.ui.screen.ScanScreen
+import com.safemed.ui.screen.profile.ChangePasswordScreen
+import com.safemed.ui.screen.profile.SecurityScreen
+import com.safemed.ui.screen.profile.SettingsScreen
+import com.safemed.ui.screen.profile.SupportScreen
+import com.safemed.ui.screen.profile.TermsScreen
+import com.safemed.ui.screen.profile.UpdateProfileScreen
 
 /**
  * NavHost chính của ứng dụng SafeMed
@@ -140,7 +146,86 @@ fun SafeMedNavGraph(
                     navController.navigate(AppDestination.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onNavigateToUpdateProfile = { 
+                    navController.navigate(AppDestination.UpdateProfile.route) 
+                },
+                onNavigateToScanHistory = { 
+                    navController.navigate(AppDestination.ScanHistory.route) 
+                },
+                onNavigateToSecurity = { 
+                    navController.navigate(AppDestination.Security.route) 
+                },
+                onNavigateToTerms = { 
+                    navController.navigate(AppDestination.Terms.route) 
+                },
+                onNavigateToSupport = { 
+                    navController.navigate(AppDestination.Support.route) 
+                },
+                onNavigateToChangePassword = { 
+                    navController.navigate(AppDestination.ChangePassword.route) 
+                },
+                onNavigateToSettings = { 
+                    navController.navigate(AppDestination.Settings.route) 
                 }
+            )
+        }
+
+        // Màn hình cập nhật thông tin cá nhân
+        composable(AppDestination.UpdateProfile.route) {
+            UpdateProfileScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình lịch sử scan (from Profile)
+        composable(AppDestination.ScanHistory.route) {
+            HistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { scannedCode ->
+                    // fromHistory = true để không tạo duplicate history
+                    navController.navigate(AppDestination.ScanResult.createRoute(scannedCode, fromHistory = true))
+                }
+            )
+        }
+
+        // Màn hình bảo mật nâng cao
+        composable(AppDestination.Security.route) {
+            SecurityScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAccountDeleted = {
+                    navController.navigate(AppDestination.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Màn hình điều khoản và chính sách
+        composable(AppDestination.Terms.route) {
+            TermsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình trung tâm hỗ trợ
+        composable(AppDestination.Support.route) {
+            SupportScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình đổi mật khẩu
+        composable(AppDestination.ChangePassword.route) {
+            ChangePasswordScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình cài đặt
+        composable(AppDestination.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

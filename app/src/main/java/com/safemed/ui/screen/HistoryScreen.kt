@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,6 +60,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.safemed.R
 import com.safemed.data.model.ScanHistory
 import com.safemed.ui.theme.EmeraldGreen
 import com.safemed.ui.theme.SafeMedTheme
@@ -94,11 +96,13 @@ fun HistoryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showClearAllDialog by remember { mutableStateOf(false) }
 
+    val deletedSuccessMsg = stringResource(R.string.history_deleted_success)
+    
     // Xử lý trạng thái xóa
     LaunchedEffect(deleteState) {
         when (deleteState) {
             is DeleteState.Success -> {
-                snackbarHostState.showSnackbar("Đã xóa thành công")
+                snackbarHostState.showSnackbar(deletedSuccessMsg)
                 viewModel.resetDeleteState()
             }
             is DeleteState.Error -> {
@@ -113,8 +117,8 @@ fun HistoryScreen(
     if (showClearAllDialog) {
         AlertDialog(
             onDismissRequest = { showClearAllDialog = false },
-            title = { Text("Xóa tất cả lịch sử?") },
-            text = { Text("Bạn có chắc chắn muốn xóa toàn bộ lịch sử quét? Hành động này không thể hoàn tác.") },
+            title = { Text(stringResource(R.string.history_clear_all_title)) },
+            text = { Text(stringResource(R.string.history_clear_all_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -122,12 +126,12 @@ fun HistoryScreen(
                         showClearAllDialog = false
                     }
                 ) {
-                    Text("Xóa tất cả", color = Color.Red)
+                    Text(stringResource(R.string.history_clear_all), color = Color.Red)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearAllDialog = false }) {
-                    Text("Hủy")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         )
@@ -139,13 +143,13 @@ fun HistoryScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Lịch sử quét",
+                            text = stringResource(R.string.history_title),
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
                         Text(
-                            text = "Danh sách thuốc đã xác thực",
+                            text = stringResource(R.string.history_subtitle),
                             color = Color.Gray,
                             fontSize = 12.sp
                         )
@@ -155,7 +159,7 @@ fun HistoryScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Quay lại",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.Black
                         )
                     }
@@ -166,7 +170,7 @@ fun HistoryScreen(
                         IconButton(onClick = { showClearAllDialog = true }) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "Xóa tất cả",
+                                contentDescription = stringResource(R.string.history_clear_all),
                                 tint = Color.Red.copy(alpha = 0.7f)
                             )
                         }
@@ -247,7 +251,7 @@ private fun LoadingHistoryContent() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Đang tải lịch sử...",
+                text = stringResource(R.string.history_loading),
                 color = TextSecondary,
                 fontSize = 14.sp
             )
@@ -286,7 +290,7 @@ private fun EmptyHistoryContent() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Chưa có lịch sử quét",
+                text = stringResource(R.string.history_empty_title),
                 color = TextPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -295,7 +299,7 @@ private fun EmptyHistoryContent() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Bắt đầu quét thuốc để xác thực và lưu lại lịch sử.\nCác lần quét thành công sẽ hiển thị ở đây.",
+                text = stringResource(R.string.history_empty_desc),
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -332,7 +336,7 @@ private fun ErrorHistoryContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Không thể tải lịch sử",
+                text = stringResource(R.string.history_error_title),
                 color = TextPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -350,7 +354,7 @@ private fun ErrorHistoryContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = onRetry) {
-                Text("Thử lại", color = EmeraldGreen)
+                Text(stringResource(R.string.history_retry), color = EmeraldGreen)
             }
         }
     }
@@ -375,7 +379,7 @@ private fun HistoryListContent(
             val authenticCount = historyList.count { it.result == "authentic" }
             val notFoundCount = historyList.count { it.result == "not_found" }
             Text(
-                text = "${historyList.size} lần quét (${authenticCount} xác thực, ${notFoundCount} không tìm thấy)",
+                text = stringResource(R.string.history_count_info, historyList.size, authenticCount, notFoundCount),
                 color = TextSecondary,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -415,8 +419,8 @@ private fun HistoryItemCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Xóa khỏi lịch sử?") },
-            text = { Text("Bạn có chắc chắn muốn xóa \"${history.medicineName}\" khỏi lịch sử?") },
+            title = { Text(stringResource(R.string.history_delete_item_title)) },
+            text = { Text(stringResource(R.string.history_delete_item_message, history.medicineName)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -424,12 +428,12 @@ private fun HistoryItemCard(
                         showDeleteDialog = false
                     }
                 ) {
-                    Text("Xóa", color = Color.Red)
+                    Text(stringResource(R.string.history_delete_button), color = Color.Red)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Hủy")
+                    Text(stringResource(R.string.history_cancel_button))
                 }
             }
         )
@@ -476,7 +480,7 @@ private fun HistoryItemCard(
             ) {
                 // Medicine Name
                 Text(
-                    text = history.medicineName.ifBlank { "Không có tên" },
+                    text = history.medicineName.ifBlank { stringResource(R.string.history_no_name) },
                     color = TextPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -518,9 +522,10 @@ private fun HistoryItemCard(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val statusDesc = if (isAuthentic) stringResource(R.string.history_status_verified) else stringResource(R.string.history_status_not_found)
                 Icon(
                     imageVector = if (isAuthentic) Icons.Default.CheckCircle else Icons.Default.Close,
-                    contentDescription = if (isAuthentic) "Đã xác thực" else "Không tìm thấy",
+                    contentDescription = statusDesc,
                     tint = statusColor,
                     modifier = Modifier.size(20.dp)
                 )
@@ -533,7 +538,7 @@ private fun HistoryItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Xóa",
+                        contentDescription = stringResource(R.string.history_delete_button),
                         tint = Color.Red.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
                     )

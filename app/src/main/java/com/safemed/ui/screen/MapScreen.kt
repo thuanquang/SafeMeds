@@ -63,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -80,6 +81,7 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import com.safemed.R
 import com.safemed.data.model.Pharmacy
 import com.safemed.data.model.PharmacyDistance
 
@@ -219,10 +221,10 @@ fun MapScreen(
         },
         topBar = {
             TopAppBar(
-                title = { Text("🗺️ Tìm nhà thuốc (OSM)") },
+                title = { Text(stringResource(R.string.map_title_osm)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -330,12 +332,12 @@ private fun PharmacyListContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Nhà thuốc gần đây",
+                text = stringResource(R.string.map_nearby_pharmacies),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "${pharmacies.size} kết quả",
+                text = stringResource(R.string.map_results_count, pharmacies.size),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -361,7 +363,7 @@ private fun PharmacyListContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Không tìm thấy nhà thuốc",
+                        text = stringResource(R.string.map_no_pharmacy),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -490,14 +492,14 @@ private fun PharmacyDetailContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Chi tiết nhà thuốc",
+                text = stringResource(R.string.map_pharmacy_detail),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
+                    contentDescription = stringResource(R.string.btn_close)
                 )
             }
         }
@@ -564,7 +566,7 @@ private fun PharmacyDetailContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Đang tính đường...",
+                            text = stringResource(R.string.map_calculating_route),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -618,7 +620,7 @@ private fun PharmacyDetailContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (pharmacy.isOpen) "Đang mở cửa" else "Đã đóng cửa",
+                        text = if (pharmacy.isOpen) stringResource(R.string.map_open_now) else stringResource(R.string.map_closed),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = if (pharmacy.isOpen) Color(0xFF4CAF50) else Color(0xFFF44336)
@@ -650,7 +652,7 @@ private fun PharmacyDetailContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Gọi điện")
+                    Text(stringResource(R.string.map_call))
                 }
             }
             
@@ -668,7 +670,7 @@ private fun PharmacyDetailContent(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Chỉ đường")
+                Text(stringResource(R.string.map_navigate))
             }
         }
         

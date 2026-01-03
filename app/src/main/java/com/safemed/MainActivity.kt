@@ -4,18 +4,23 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.safemed.data.repository.AuthRepository
+import com.safemed.data.repository.UserPreferencesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
@@ -28,14 +33,25 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authRepository: AuthRepository
 
+    @Inject
+    lateinit var userPreferencesRepository: UserPreferencesRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Apply saved language setting on app start
+        applySavedLanguage()
 
         // Xử lý deep link nếu có (khi app mở lần đầu từ email link)
         handleEmailLinkIntent(intent)
 
         setContent {
-            SafeMedApp()
+            // Observe dark mode preference
+            val isDarkMode by userPreferencesRepository.isDarkMode.collectAsState(
+                initial = userPreferencesRepository.getDarkMode()
+            )
+            
+            SafeMedApp(isDarkMode = isDarkMode)
         }
     }
 
@@ -104,5 +120,15 @@ class MainActivity : ComponentActivity() {
         sharedPreferences.edit()
             .remove(KEY_PENDING_EMAIL)
             .apply()
+    }
+
+    /**
+     * Apply saved language setting from preferences
+     */
+    private fun applySavedLanguage() {
+        val savedLanguage = userPreferencesRepository.getLanguage()
+        val localeList = LocaleListCompat.forLanguageTags(savedLanguage)
+        AppCompatDelegate.setApplicationLocales(localeList)
+        Log.d(TAG, "Applied saved language: $savedLanguage")
     }
 }

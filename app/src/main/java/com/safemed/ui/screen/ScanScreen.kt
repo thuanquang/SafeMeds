@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview as ComposePreview
@@ -66,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.safemed.R
 import com.safemed.scanner.HybridMedicineAnalyzer
 import com.safemed.scanner.ImageProcessor
 import com.safemed.scanner.ProcessingResult
@@ -261,7 +263,7 @@ fun ScanScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = if (scanState == ScanState.PROCESSING_IMAGE) 
-                                    "Đang đọc ảnh..." else "Đang xác thực...",
+                                    stringResource(R.string.scan_reading_image) else stringResource(R.string.scan_verifying),
                                 color = TextWhite,
                                 fontSize = 14.sp
                             )
@@ -292,7 +294,7 @@ fun ScanScreen(
 
             // Instruction Title
             Text(
-                text = "Quét mã thuốc",
+                text = stringResource(R.string.scan_medicine_code),
                 color = TextWhite,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
@@ -303,7 +305,7 @@ fun ScanScreen(
 
             // Instruction Body Text
             Text(
-                text = "Đưa camera vào mã vạch hoặc số đăng ký (SĐK)\ntrên bao bì thuốc để xác thực tự động",
+                text = stringResource(R.string.scan_auto_instruction),
                 color = TextGray,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -332,10 +334,10 @@ fun ScanScreen(
             ) {
                 Text(
                     text = when (scanState) {
-                        ScanState.IDLE -> "🔍 Đang tìm mã thuốc..."
-                        ScanState.PROCESSING_IMAGE -> "📷 Đang xử lý ảnh..."
-                        ScanState.SCANNING -> "⏳ Đang xác thực..."
-                        ScanState.COMPLETED -> "✅ Hoàn tất!"
+                        ScanState.IDLE -> stringResource(R.string.scan_status_searching)
+                        ScanState.PROCESSING_IMAGE -> stringResource(R.string.scan_status_processing)
+                        ScanState.SCANNING -> stringResource(R.string.scan_status_verifying)
+                        ScanState.COMPLETED -> stringResource(R.string.scan_status_complete)
                     },
                     color = TextWhite,
                     fontSize = 16.sp,
@@ -479,7 +481,7 @@ private fun CameraPermissionPlaceholder(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Ứng dụng cần quyền truy cập camera để quét mã thuốc",
+                text = stringResource(R.string.scan_camera_permission_required),
                 color = TextWhite,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center
@@ -492,7 +494,7 @@ private fun CameraPermissionPlaceholder(
                 )
             ) {
                 Text(
-                    text = "Cấp quyền Camera",
+                    text = stringResource(R.string.scan_grant_permission),
                     color = TextWhite
                 )
             }
@@ -528,12 +530,12 @@ private fun GalleryUploadButton(
     ) {
         Icon(
             imageVector = Icons.Default.PhotoLibrary,
-            contentDescription = "Chọn ảnh từ thư viện",
+            contentDescription = stringResource(R.string.scan_from_gallery),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Tải ảnh lên",
+            text = stringResource(R.string.scan_from_gallery),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
@@ -599,7 +601,7 @@ private fun ScanScreenTopBar(
                     fontSize = 18.sp
                 )
                 Text(
-                    text = "Xác thực thuốc chính hãng",
+                    text = stringResource(R.string.app_slogan),
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
@@ -619,7 +621,7 @@ private fun ScanScreenTopBar(
             IconButton(onClick = onNavigateToHistory) {
                 Icon(
                     imageVector = Icons.Default.History,
-                    contentDescription = "Lịch sử quét",
+                    contentDescription = stringResource(R.string.history_title),
                     tint = EmeraldGreen
                 )
             }

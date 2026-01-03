@@ -45,12 +45,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.safemed.R
 import com.safemed.data.model.Medicine
 import com.safemed.ui.theme.EmeraldGreen
 import com.safemed.ui.theme.SafeMedTheme
@@ -86,13 +88,13 @@ fun ScanResultScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Kết quả xác thực",
+                            text = stringResource(R.string.scan_result_title),
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
                         Text(
-                            text = "SafeMed - Dữ liệu Bộ Y tế",
+                            text = stringResource(R.string.scan_result_subtitle),
                             color = Color.Gray,
                             fontSize = 12.sp
                         )
@@ -102,7 +104,7 @@ fun ScanResultScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.Black
                         )
                     }
@@ -185,14 +187,14 @@ private fun LoadingContent() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Đang xác thực dữ liệu quốc gia...",
+                text = stringResource(R.string.scan_result_verifying),
                 color = TextPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Đối chiếu với CSDL Bộ Y tế",
+                text = stringResource(R.string.scan_result_comparing),
                 color = TextSecondary,
                 fontSize = 14.sp
             )
@@ -280,7 +282,7 @@ private fun NotFoundContent(
                     .padding(20.dp)
             ) {
                 Text(
-                    text = "Thông tin quét",
+                    text = stringResource(R.string.scan_result_scan_info),
                     color = TextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -289,13 +291,13 @@ private fun NotFoundContent(
                 HorizontalDivider(color = Color(0xFFE5E7EB))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                DetailRow(label = "Mã quét được", value = scannedCode)
-                DetailRow(label = "Thời gian xác thực", value = verificationTime)
+                DetailRow(label = stringResource(R.string.scan_result_scanned_code), value = scannedCode)
+                DetailRow(label = stringResource(R.string.scan_result_verification_time), value = verificationTime)
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "💡 Gợi ý: Hãy kiểm tra lại mã quét hoặc liên hệ nhà sản xuất để xác minh.",
+                    text = stringResource(R.string.scan_result_tip),
                     color = TextSecondary,
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -367,7 +369,7 @@ private fun ErrorContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "LỖI KẾT NỐI",
+                    text = stringResource(R.string.scan_result_connection_error),
                     color = WarningOrange,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -399,7 +401,7 @@ private fun ErrorContent(
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                DetailRow(label = "Mã quét được", value = scannedCode)
+                DetailRow(label = stringResource(R.string.scan_result_scanned_code), value = scannedCode)
             }
         }
 
@@ -424,7 +426,7 @@ private fun ErrorContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Thử lại",
+                text = stringResource(R.string.btn_retry),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -481,7 +483,7 @@ private fun AuthenticVerificationCard(isSdkValid: Boolean) {
 
             // Status Text
             Text(
-                text = "THUỐC CHÍNH HÃNG",
+                text = stringResource(R.string.scan_result_authentic),
                 color = SuccessGreen,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -509,7 +511,7 @@ private fun AuthenticVerificationCard(isSdkValid: Boolean) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Dữ liệu từ Bộ Y tế",
+                        text = stringResource(R.string.scan_result_data_source),
                         color = SuccessGreen,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -520,7 +522,7 @@ private fun AuthenticVerificationCard(isSdkValid: Boolean) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Sản phẩm đã được xác thực thành công.\nĐây là thuốc đã đăng ký với Cục Quản lý Dược.",
+                text = stringResource(R.string.scan_result_authentic_desc),
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -550,7 +552,7 @@ private fun AuthenticVerificationCard(isSdkValid: Boolean) {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Số đăng ký có thể đã hết hạn. Kiểm tra thông tin bên dưới.",
+                            text = stringResource(R.string.scan_result_sdk_warning),
                             color = WarningOrange,
                             fontSize = 12.sp,
                             lineHeight = 16.sp
@@ -600,7 +602,7 @@ private fun NotFoundVerificationCard() {
 
             // Status Text
             Text(
-                text = "KHÔNG TÌM THẤY DỮ LIỆU",
+                text = stringResource(R.string.scan_result_not_found),
                 color = WarningRed,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -609,7 +611,7 @@ private fun NotFoundVerificationCard() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Mã thuốc không có trong cơ sở dữ liệu\nCục Quản lý Dược - Bộ Y tế.",
+                text = stringResource(R.string.scan_result_not_found_desc),
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -629,7 +631,7 @@ private fun NotFoundVerificationCard() {
                     .padding(12.dp)
             ) {
                 Text(
-                    text = "⚠️ Hãy cẩn thận khi sử dụng sản phẩm này. Liên hệ nhà sản xuất hoặc cơ quan y tế để xác minh.",
+                    text = stringResource(R.string.scan_result_not_found_warning),
                     color = WarningRed,
                     fontSize = 12.sp,
                     lineHeight = 18.sp
@@ -660,7 +662,7 @@ private fun MedicineDetailsCard(
                 .padding(20.dp)
         ) {
             Text(
-                text = "Thông tin sản phẩm",
+                text = stringResource(R.string.scan_result_product_info),
                 color = TextPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -671,19 +673,20 @@ private fun MedicineDetailsCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Thông tin cơ bản
-            DetailRow(label = "Tên thuốc", value = medicine.tenThuoc.ifBlank { "Không có thông tin" })
-            DetailRow(label = "Hoạt chất", value = medicine.hoatChat.ifBlank { "Không có thông tin" })
-            DetailRow(label = "Hàm lượng", value = medicine.hamLuong.ifBlank { "Không có thông tin" })
-            DetailRow(label = "Dạng bào chế", value = medicine.dangBaoChe.ifBlank { "Không có thông tin" })
-            DetailRow(label = "Quy cách đóng gói", value = medicine.quyCach.ifBlank { "Không có thông tin" })
+            val noInfo = stringResource(R.string.no_info)
+            DetailRow(label = stringResource(R.string.scan_result_medicine_name), value = medicine.tenThuoc.ifBlank { noInfo })
+            DetailRow(label = stringResource(R.string.scan_result_active_ingredient), value = medicine.hoatChat.ifBlank { noInfo })
+            DetailRow(label = stringResource(R.string.scan_result_dosage), value = medicine.hamLuong.ifBlank { noInfo })
+            DetailRow(label = stringResource(R.string.scan_result_formulation), value = medicine.dangBaoChe.ifBlank { noInfo })
+            DetailRow(label = stringResource(R.string.scan_result_packaging), value = medicine.quyCach.ifBlank { noInfo })
             
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider(color = Color(0xFFE5E7EB))
             Spacer(modifier = Modifier.height(8.dp))
             
             // Thông tin nhà sản xuất
-            DetailRow(label = "Nhà sản xuất", value = medicine.nhaSanXuat.ifBlank { "Không có thông tin" })
-            DetailRow(label = "Nước sản xuất", value = medicine.nuocSanXuat.ifBlank { "Không có thông tin" })
+            DetailRow(label = stringResource(R.string.scan_result_manufacturer), value = medicine.nhaSanXuat.ifBlank { noInfo })
+            DetailRow(label = stringResource(R.string.scan_result_country), value = medicine.nuocSanXuat.ifBlank { noInfo })
             
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider(color = Color(0xFFE5E7EB))
@@ -691,24 +694,24 @@ private fun MedicineDetailsCard(
             
             // Thông tin đăng ký
             if (medicine.sdk.isNotBlank()) {
-                DetailRow(label = "Số đăng ký (SĐK)", value = medicine.sdk)
+                DetailRow(label = stringResource(R.string.scan_result_registration_number), value = medicine.sdk)
             }
             if (medicine.barcode.isNotBlank()) {
-                DetailRow(label = "Mã vạch", value = medicine.barcode)
+                DetailRow(label = stringResource(R.string.scan_result_barcode), value = medicine.barcode)
             }
             DetailRow(
-                label = "Hạn SĐK", 
-                value = medicine.hanSdSdk.ifBlank { "Không có thông tin" },
+                label = stringResource(R.string.scan_result_expiry), 
+                value = medicine.hanSdSdk.ifBlank { noInfo },
                 valueColor = if (!medicine.isSdkValid()) WarningOrange else TextPrimary
             )
             if (medicine.tuoiTho.isNotBlank()) {
                 // Thêm "tháng" nếu giá trị chỉ là số, hoặc giữ nguyên nếu đã có đơn vị
                 val tuoiThoDisplay = if (medicine.tuoiTho.all { it.isDigit() }) {
-                    "${medicine.tuoiTho} tháng"
+                    stringResource(R.string.scan_result_shelf_life_months, medicine.tuoiTho)
                 } else {
                     medicine.tuoiTho
                 }
-                DetailRow(label = "Tuổi thọ", value = tuoiThoDisplay)
+                DetailRow(label = stringResource(R.string.scan_result_shelf_life), value = tuoiThoDisplay)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -721,7 +724,7 @@ private fun MedicineDetailsCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Mã quét",
+                    text = stringResource(R.string.scan_result_scanned_code),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -740,7 +743,7 @@ private fun MedicineDetailsCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Thời gian xác thực",
+                    text = stringResource(R.string.scan_result_verification_time),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -806,7 +809,7 @@ private fun ActionButtons(
             )
         ) {
             Text(
-                text = "Quét thuốc khác",
+                text = stringResource(R.string.scan_result_scan_another),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -830,7 +833,7 @@ private fun ActionButtons(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Xem lại lịch sử",
+                text = stringResource(R.string.scan_result_view_history),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -848,7 +851,7 @@ private fun ActionButtons(
             )
         ) {
             Text(
-                text = "Về trang chủ",
+                text = stringResource(R.string.scan_result_go_home),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
