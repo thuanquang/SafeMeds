@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Camera permission for scanning -->
+    <!-- Camera feature and permission for scanning -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Location permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Storage permissions for avatar upload -->
     <!-- Android 12 and below -->
@@ -13,8 +18,8 @@
     <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <application android:name=".SafeMedApplication" android:allowBackup="true" android:icon="@android:drawable/ic_dialog_info" android:label="@string/app_name" android:roundIcon="@android:drawable/ic_dialog_info" android:supportsRtl="true" android:theme="@style/Theme.SafeMed">
+            
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

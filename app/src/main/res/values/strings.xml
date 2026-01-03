@@ -19,6 +19,9 @@
     <string name="btn_contact">Liên hệ</string>
     <string name="btn_download_app">Tải ứng dụng</string>
     <string name="processing">Đang xử lý…</string>
+    <string name="btn_retry">Thử lại</string>
+    <string name="no_info">Không có thông tin</string>
+    <string name="unknown">Không xác định</string>
 
     <!-- Login Screen -->
     <string name="login_title">Đăng nhập</string>
@@ -69,11 +72,86 @@
     <string name="scan_instruction">Hướng camera vào mã vạch hoặc QR code trên hộp thuốc</string>
     <string name="scan_result">Kết quả quét</string>
     <string name="scan_no_result">Không tìm thấy thông tin thuốc</string>
+    <string name="scan_medicine_code">Quét mã thuốc</string>
+    <string name="scan_auto_instruction">Đưa camera vào mã vạch hoặc số đăng ký (SĐK)\ntrên bao bì thuốc để xác thực tự động</string>
+    <string name="scan_status_searching">🔍 Đang tìm mã thuốc...</string>
+    <string name="scan_status_processing">📷 Đang xử lý ảnh...</string>
+    <string name="scan_status_verifying">⏳ Đang xác thực...</string>
+    <string name="scan_status_complete">✅ Hoàn tất!</string>
+    <string name="scan_reading_image">Đang đọc ảnh...</string>
+    <string name="scan_verifying">Đang xác thực...</string>
+    <string name="scan_grant_permission">Cấp quyền</string>
+    <string name="scan_camera_permission_required">Cần quyền camera để quét mã</string>
+    <string name="scan_from_gallery">Chọn từ thư viện</string>
+
+    <!-- Scan Result Screen -->
+    <string name="scan_result_title">Kết quả xác thực</string>
+    <string name="scan_result_subtitle">SafeMed - Dữ liệu Bộ Y tế</string>
+    <string name="scan_result_verifying">Đang xác thực dữ liệu quốc gia...</string>
+    <string name="scan_result_comparing">Đối chiếu với CSDL Bộ Y tế</string>
+    <string name="scan_result_authentic">THUỐC CHÍNH HÃNG</string>
+    <string name="scan_result_authentic_desc">Sản phẩm đã được xác thực thành công.\nĐây là thuốc đã đăng ký với Cục Quản lý Dược.</string>
+    <string name="scan_result_data_source">Dữ liệu từ Bộ Y tế</string>
+    <string name="scan_result_sdk_warning">Số đăng ký có thể đã hết hạn. Kiểm tra thông tin bên dưới.</string>
+    <string name="scan_result_not_found">KHÔNG TÌM THẤY DỮ LIỆU</string>
+    <string name="scan_result_not_found_desc">Mã thuốc không có trong cơ sở dữ liệu\nCục Quản lý Dược - Bộ Y tế.</string>
+    <string name="scan_result_not_found_warning">⚠️ Hãy cẩn thận khi sử dụng sản phẩm này. Liên hệ nhà sản xuất hoặc cơ quan y tế để xác minh.</string>
+    <string name="scan_result_connection_error">LỖI KẾT NỐI</string>
+    <string name="scan_result_scan_info">Thông tin quét</string>
+    <string name="scan_result_tip">💡 Gợi ý: Hãy kiểm tra lại mã quét hoặc liên hệ nhà sản xuất để xác minh.</string>
+    <string name="scan_result_product_info">Thông tin sản phẩm</string>
+    <string name="scan_result_medicine_name">Tên thuốc</string>
+    <string name="scan_result_active_ingredient">Hoạt chất</string>
+    <string name="scan_result_dosage">Hàm lượng</string>
+    <string name="scan_result_formulation">Dạng bào chế</string>
+    <string name="scan_result_packaging">Quy cách đóng gói</string>
+    <string name="scan_result_manufacturer">Nhà sản xuất</string>
+    <string name="scan_result_country">Nước sản xuất</string>
+    <string name="scan_result_registration_number">Số đăng ký (SĐK)</string>
+    <string name="scan_result_barcode">Mã vạch</string>
+    <string name="scan_result_expiry">Hạn SĐK</string>
+    <string name="scan_result_shelf_life">Tuổi thọ</string>
+    <string name="scan_result_shelf_life_months">%1$s tháng</string>
+    <string name="scan_result_scanned_code">Mã quét được</string>
+    <string name="scan_result_verification_time">Thời gian xác thực</string>
+    <string name="scan_result_scan_another">Quét thuốc khác</string>
+    <string name="scan_result_view_history">Xem lại lịch sử</string>
+    <string name="scan_result_go_home">Về trang chủ</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Lịch sử quét</string>
+    <string name="history_subtitle">Danh sách thuốc đã xác thực</string>
+    <string name="history_loading">Đang tải lịch sử...</string>
+    <string name="history_empty_title">Chưa có lịch sử quét</string>
+    <string name="history_empty_desc">Bắt đầu quét thuốc để xác thực và lưu lại lịch sử.\nCác lần quét thành công sẽ hiển thị ở đây.</string>
+    <string name="history_error_title">Không thể tải lịch sử</string>
+    <string name="history_retry">Thử lại</string>
+    <string name="history_count_info">%1$d lần quét (%2$d xác thực, %3$d không tìm thấy)</string>
+    <string name="history_no_name">Không có tên</string>
+    <string name="history_status_verified">Đã xác thực</string>
+    <string name="history_status_not_found">Không tìm thấy</string>
+    <string name="history_delete_button">Xóa</string>
+    <string name="history_cancel_button">Hủy</string>
+    <string name="history_delete_item_title">Xóa khỏi lịch sử?</string>
+    <string name="history_delete_item_message">Bạn có chắc chắn muốn xóa \"%1$s\" khỏi lịch sử?</string>
+    <string name="history_clear_all_title">Xóa tất cả lịch sử?</string>
+    <string name="history_clear_all_message">Bạn có chắc chắn muốn xóa toàn bộ lịch sử quét? Hành động này không thể hoàn tác.</string>
+    <string name="history_clear_all">Xóa tất cả</string>
+    <string name="history_deleted_success">Đã xóa thành công</string>
 
     <!-- Map Screen -->
     <string name="map_title">🗺️ Tìm nhà thuốc</string>
+    <string name="map_title_osm">🗺️ Tìm nhà thuốc (OSM)</string>
     <string name="map_search_hint">Tìm nhà thuốc gần bạn</string>
     <string name="map_no_pharmacy">Không tìm thấy nhà thuốc</string>
+    <string name="map_nearby_pharmacies">Nhà thuốc gần đây</string>
+    <string name="map_results_count">%1$d kết quả</string>
+    <string name="map_pharmacy_detail">Chi tiết nhà thuốc</string>
+    <string name="map_calculating_route">Đang tính đường...</string>
+    <string name="map_open_now">Đang mở cửa</string>
+    <string name="map_closed">Đã đóng cửa</string>
+    <string name="map_call">Gọi điện</string>
+    <string name="map_navigate">Chỉ đường</string>
 
     <!-- Profile Screen -->
     <string name="profile_title">Hồ sơ</string>

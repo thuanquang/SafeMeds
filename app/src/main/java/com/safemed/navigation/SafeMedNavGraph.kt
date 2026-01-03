@@ -3,14 +3,18 @@ package com.safemed.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.safemed.ui.screen.DebugScreen
+import com.safemed.ui.screen.HistoryScreen
 import com.safemed.ui.screen.HomeScreen
 import com.safemed.ui.screen.LoginScreen
 import com.safemed.ui.screen.MapScreen
 import com.safemed.ui.screen.ProfileScreen
 import com.safemed.ui.screen.RegisterScreen
+import com.safemed.ui.screen.ScanResultScreen
 import com.safemed.ui.screen.ScanScreen
 import com.safemed.ui.screen.profile.ChangePasswordScreen
 import com.safemed.ui.screen.profile.SecurityScreen
@@ -84,7 +88,53 @@ fun SafeMedNavGraph(
         // Màn hình quét thuốc
         composable(AppDestination.Scan.route) {
             ScanScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { scannedCode ->
+                    navController.navigate(AppDestination.ScanResult.createRoute(scannedCode))
+                },
+                onNavigateToHistory = {
+                    navController.navigate(AppDestination.History.route)
+                }
+            )
+        }
+
+        // Màn hình kết quả quét
+        composable(
+            route = AppDestination.ScanResult.route,
+            arguments = listOf(
+                navArgument("scannedCode") { type = NavType.StringType },
+                navArgument("fromHistory") { 
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val scannedCode = backStackEntry.arguments?.getString("scannedCode") ?: ""
+            ScanResultScreen(
+                scannedCode = scannedCode,
+                onNavigateBack = { navController.popBackStack() },
+                onScanAgain = {
+                    // Pop về ScanScreen và reset state
+                    navController.popBackStack(AppDestination.Scan.route, inclusive = false)
+                },
+                onGoHome = {
+                    // Pop về Home screen
+                    navController.popBackStack(AppDestination.Home.route, inclusive = false)
+                },
+                onNavigateToHistory = {
+                    navController.navigate(AppDestination.History.route)
+                }
+            )
+        }
+
+        // Màn hình lịch sử quét
+        composable(AppDestination.History.route) {
+            HistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { scannedCode ->
+                    // fromHistory = true để không tạo duplicate history
+                    navController.navigate(AppDestination.ScanResult.createRoute(scannedCode, fromHistory = true))
+                }
             )
         }
 
@@ -128,11 +178,15 @@ fun SafeMedNavGraph(
             )
         }
 
-        // Màn hình lịch sử scan
+        // Màn hình lịch sử scan (from Profile)
         composable(AppDestination.ScanHistory.route) {
-            // TODO: ScanHistoryScreen - sẽ implement sau
-            // Tạm thời điều hướng về
-            navController.popBackStack()
+            HistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResult = { scannedCode ->
+                    // fromHistory = true để không tạo duplicate history
+                    navController.navigate(AppDestination.ScanResult.createRoute(scannedCode, fromHistory = true))
+                }
+            )
         }
 
         // Màn hình bảo mật nâng cao

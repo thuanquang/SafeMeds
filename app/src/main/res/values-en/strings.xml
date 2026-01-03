@@ -16,6 +16,9 @@
     <string name="btn_contact">Contact</string>
     <string name="btn_download_app">Download App</string>
     <string name="processing">Processing…</string>
+    <string name="btn_retry">Retry</string>
+    <string name="no_info">No information</string>
+    <string name="unknown">Unknown</string>
 
     <!-- Login Screen -->
     <string name="login_title">Login</string>
@@ -66,11 +69,86 @@
     <string name="scan_instruction">Point your camera at the barcode or QR code on the medicine box</string>
     <string name="scan_result">Scan Result</string>
     <string name="scan_no_result">No medicine information found</string>
+    <string name="scan_medicine_code">Scan Medicine Code</string>
+    <string name="scan_auto_instruction">Point camera at barcode or registration number (SĐK)\non medicine packaging for automatic verification</string>
+    <string name="scan_status_searching">🔍 Searching for medicine code...</string>
+    <string name="scan_status_processing">📷 Processing image...</string>
+    <string name="scan_status_verifying">⏳ Verifying...</string>
+    <string name="scan_status_complete">✅ Complete!</string>
+    <string name="scan_reading_image">Reading image...</string>
+    <string name="scan_verifying">Verifying...</string>
+    <string name="scan_grant_permission">Grant Permission</string>
+    <string name="scan_camera_permission_required">Camera permission required for scanning</string>
+    <string name="scan_from_gallery">Select from Gallery</string>
+
+    <!-- Scan Result Screen -->
+    <string name="scan_result_title">Verification Result</string>
+    <string name="scan_result_subtitle">SafeMed - Ministry of Health Data</string>
+    <string name="scan_result_verifying">Verifying national data...</string>
+    <string name="scan_result_comparing">Comparing with Ministry of Health database</string>
+    <string name="scan_result_authentic">AUTHENTIC MEDICINE</string>
+    <string name="scan_result_authentic_desc">Product verified successfully.\nThis medicine is registered with Drug Administration.</string>
+    <string name="scan_result_data_source">Data from Ministry of Health</string>
+    <string name="scan_result_sdk_warning">Registration number may have expired. Check information below.</string>
+    <string name="scan_result_not_found">DATA NOT FOUND</string>
+    <string name="scan_result_not_found_desc">Medicine code not found in\nDrug Administration - Ministry of Health database.</string>
+    <string name="scan_result_not_found_warning">⚠️ Be careful when using this product. Contact manufacturer or health authorities for verification.</string>
+    <string name="scan_result_connection_error">CONNECTION ERROR</string>
+    <string name="scan_result_scan_info">Scan Information</string>
+    <string name="scan_result_tip">💡 Tip: Please recheck the scanned code or contact manufacturer for verification.</string>
+    <string name="scan_result_product_info">Product Information</string>
+    <string name="scan_result_medicine_name">Medicine Name</string>
+    <string name="scan_result_active_ingredient">Active Ingredient</string>
+    <string name="scan_result_dosage">Dosage</string>
+    <string name="scan_result_formulation">Formulation</string>
+    <string name="scan_result_packaging">Packaging</string>
+    <string name="scan_result_manufacturer">Manufacturer</string>
+    <string name="scan_result_country">Country</string>
+    <string name="scan_result_registration_number">Registration Number (SDK)</string>
+    <string name="scan_result_barcode">Barcode</string>
+    <string name="scan_result_expiry">SDK Expiry</string>
+    <string name="scan_result_shelf_life">Shelf Life</string>
+    <string name="scan_result_shelf_life_months">%1$s months</string>
+    <string name="scan_result_scanned_code">Scanned Code</string>
+    <string name="scan_result_verification_time">Verification Time</string>
+    <string name="scan_result_scan_another">Scan Another Medicine</string>
+    <string name="scan_result_view_history">View History</string>
+    <string name="scan_result_go_home">Go to Home</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Scan History</string>
+    <string name="history_subtitle">List of verified medicines</string>
+    <string name="history_loading">Loading history...</string>
+    <string name="history_empty_title">No scan history</string>
+    <string name="history_empty_desc">Start scanning medicines to verify and save history.\nSuccessful scans will appear here.</string>
+    <string name="history_error_title">Cannot load history</string>
+    <string name="history_retry">Retry</string>
+    <string name="history_count_info">%1$d scans (%2$d verified, %3$d not found)</string>
+    <string name="history_no_name">No name</string>
+    <string name="history_status_verified">Verified</string>
+    <string name="history_status_not_found">Not found</string>
+    <string name="history_delete_button">Delete</string>
+    <string name="history_cancel_button">Cancel</string>
+    <string name="history_delete_item_title">Delete from history?</string>
+    <string name="history_delete_item_message">Are you sure you want to delete \"%1$s\" from history?</string>
+    <string name="history_clear_all_title">Delete all history?</string>
+    <string name="history_clear_all_message">Are you sure you want to delete all scan history? This action cannot be undone.</string>
+    <string name="history_clear_all">Delete All</string>
+    <string name="history_deleted_success">Deleted successfully</string>
 
     <!-- Map Screen -->
     <string name="map_title">🗺️ Find Pharmacy</string>
+    <string name="map_title_osm">🗺️ Find Pharmacy (OSM)</string>
     <string name="map_search_hint">Find pharmacies near you</string>
     <string name="map_no_pharmacy">No pharmacies found</string>
+    <string name="map_nearby_pharmacies">Nearby Pharmacies</string>
+    <string name="map_results_count">%1$d results</string>
+    <string name="map_pharmacy_detail">Pharmacy Details</string>
+    <string name="map_calculating_route">Calculating route...</string>
+    <string name="map_open_now">Open Now</string>
+    <string name="map_closed">Closed</string>
+    <string name="map_call">Call</string>
+    <string name="map_navigate">Navigate</string>
 
     <!-- Profile Screen -->
     <string name="profile_title">Profile</string>

@@ -9,11 +9,18 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
+import com.safemed.BuildConfig
+import com.safemed.data.network.RouteService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -43,4 +50,43 @@ object FirebaseModule {
     ): SharedPreferences {
         return context.getSharedPreferences("safemed_prefs", Context.MODE_PRIVATE)
     }
+
+    // ============================================
+    // OpenRouteService API Dependencies
+    // ============================================
+
+    @Provides
+    @Singleton
+    @Named("OrsApiKey")
+    fun provideOrsApiKey(): String {
+        return BuildConfig.ORS_API_KEY
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
+        
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRouteService(okHttpClient: OkHttpClient): RouteService {
+        return Retrofit.Builder()
+            .baseUrl("https://api.openrouteservice.org/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(RouteService::class.java)
+    }
 }
+
