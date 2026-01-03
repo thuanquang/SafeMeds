@@ -6,6 +6,15 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+import java.util.Properties
+
+// Load local.properties for API keys
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.safemed"
     compileSdk = 34
@@ -18,6 +27,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // OpenRouteService API Key - stored in local.properties
+        buildConfigField("String", "ORS_API_KEY", "\"${localProperties.getProperty("ORS_API_KEY", "")}\"")
+        
+
     }
 
     buildTypes {
@@ -41,6 +55,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -84,9 +99,11 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Google Maps (view + Compose bindings)
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
-    implementation("com.google.maps.android:maps-compose:4.3.3")
+    // OpenStreetMap - OSMDroid
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    
+    // Location services for FusedLocationProviderClient
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")
