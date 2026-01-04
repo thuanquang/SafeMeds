@@ -4,6 +4,7 @@ import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -151,7 +153,7 @@ fun AddEditReminderScreen(
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (uiState.isEditMode) "Cập nhật" else "Lưu nhắc nhở",
+                                text = if (uiState.isEditMode) stringResource(com.safemed.R.string.reminder_update) else stringResource(com.safemed.R.string.reminder_save),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -173,12 +175,21 @@ private fun AddEditReminderHeader(
     isEditMode: Boolean,
     onNavigateBack: () -> Unit
 ) {
+    val isDarkMode = isSystemInDarkTheme()
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(EmeraldGreen, EmeraldGreenDark)
+                    colors = if (isDarkMode) {
+                        listOf(
+                            EmeraldGreenDark.copy(alpha = 0.9f),
+                            EmeraldGreenDark.copy(alpha = 0.7f)
+                        )
+                    } else {
+                        listOf(EmeraldGreen, EmeraldGreenDark)
+                    }
                 )
             )
             .padding(16.dp)
@@ -190,7 +201,7 @@ private fun AddEditReminderHeader(
             IconButton(onClick = onNavigateBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "Quay lại",
+                    contentDescription = stringResource(com.safemed.R.string.reminder_back),
                     tint = Color.White
                 )
             }
@@ -198,7 +209,7 @@ private fun AddEditReminderHeader(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = if (isEditMode) "✏️ Sửa nhắc nhở" else "➕ Tạo nhắc nhở mới",
+                text = if (isEditMode) stringResource(com.safemed.R.string.reminder_edit_title) else stringResource(com.safemed.R.string.reminder_create_new),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -223,7 +234,7 @@ private fun TimeSlotSection(
 
     Column {
         Text(
-            text = "⏰ Thời gian nhắc nhở",
+            text = stringResource(com.safemed.R.string.reminder_time_section),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -231,7 +242,7 @@ private fun TimeSlotSection(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Chọn các buổi và giờ nhắc nhở. Có thể bỏ qua buổi không cần.",
+            text = stringResource(com.safemed.R.string.reminder_time_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -314,7 +325,7 @@ private fun TimeSlotPicker(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = slot.displayName,
+            text = slot.getDisplayName(context),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Medium
         )
@@ -368,9 +379,19 @@ private fun DaySelectionSection(
     onSetEveryday: (Boolean) -> Unit,
     onToggleDay: (Int) -> Unit
 ) {
+    val dayNames = listOf(
+        stringResource(com.safemed.R.string.reminder_day_sun),
+        stringResource(com.safemed.R.string.reminder_day_mon),
+        stringResource(com.safemed.R.string.reminder_day_tue),
+        stringResource(com.safemed.R.string.reminder_day_wed),
+        stringResource(com.safemed.R.string.reminder_day_thu),
+        stringResource(com.safemed.R.string.reminder_day_fri),
+        stringResource(com.safemed.R.string.reminder_day_sat)
+    )
+    
     Column {
         Text(
-            text = "📅 Ngày lặp lại",
+            text = stringResource(com.safemed.R.string.reminder_day_section),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -393,7 +414,7 @@ private fun DaySelectionSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Mỗi ngày",
+                text = stringResource(com.safemed.R.string.reminder_everyday),
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -406,17 +427,7 @@ private fun DaySelectionSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val days = listOf(
-                    0 to "CN",
-                    1 to "T2",
-                    2 to "T3",
-                    3 to "T4",
-                    4 to "T5",
-                    5 to "T6",
-                    6 to "T7"
-                )
-
-                days.forEach { (dayIndex, dayName) ->
+                dayNames.forEachIndexed { dayIndex, dayName ->
                     val isSelected = dayIndex in selectedDays
 
                     Box(
@@ -456,9 +467,16 @@ private fun ReminderTypeSection(
     onSetDosage: (String) -> Unit,
     onSetNote: (String) -> Unit
 ) {
+    val medicineNameLabel = stringResource(com.safemed.R.string.reminder_medicine_name)
+    val medicineNamePlaceholder = stringResource(com.safemed.R.string.reminder_medicine_placeholder)
+    val dosageLabel = stringResource(com.safemed.R.string.reminder_dosage)
+    val dosagePlaceholder = stringResource(com.safemed.R.string.reminder_dosage_placeholder)
+    val noteLabel = stringResource(com.safemed.R.string.reminder_note)
+    val notePlaceholder = stringResource(com.safemed.R.string.reminder_note_placeholder)
+    
     Column {
         Text(
-            text = "💊 Loại nhắc nhở",
+            text = stringResource(com.safemed.R.string.reminder_type_section),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -474,7 +492,7 @@ private fun ReminderTypeSection(
             FilterChip(
                 selected = !isDetailedReminder,
                 onClick = { onSetDetailedReminder(false) },
-                label = { Text("Nhắc chung") },
+                label = { Text(stringResource(com.safemed.R.string.reminder_type_general_short)) },
                 leadingIcon = if (!isDetailedReminder) {
                     { Icon(Icons.Default.Check, contentDescription = null, Modifier.size(16.dp)) }
                 } else null,
@@ -488,7 +506,7 @@ private fun ReminderTypeSection(
             FilterChip(
                 selected = isDetailedReminder,
                 onClick = { onSetDetailedReminder(true) },
-                label = { Text("Nhắc chi tiết") },
+                label = { Text(stringResource(com.safemed.R.string.reminder_type_detailed_short)) },
                 leadingIcon = if (isDetailedReminder) {
                     { Icon(Icons.Default.Check, contentDescription = null, Modifier.size(16.dp)) }
                 } else null,
@@ -506,8 +524,8 @@ private fun ReminderTypeSection(
             OutlinedTextField(
                 value = medicineName,
                 onValueChange = onSetMedicineName,
-                label = { Text("Tên thuốc") },
-                placeholder = { Text("Nhập tên thuốc...") },
+                label = { Text(medicineNameLabel) },
+                placeholder = { Text(medicineNamePlaceholder) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -522,8 +540,8 @@ private fun ReminderTypeSection(
             OutlinedTextField(
                 value = dosage,
                 onValueChange = onSetDosage,
-                label = { Text("Liều lượng") },
-                placeholder = { Text("VD: 2 viên, 10ml...") },
+                label = { Text(dosageLabel) },
+                placeholder = { Text(dosagePlaceholder) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -538,8 +556,8 @@ private fun ReminderTypeSection(
             OutlinedTextField(
                 value = note,
                 onValueChange = onSetNote,
-                label = { Text("Ghi chú (tùy chọn)") },
-                placeholder = { Text("Uống sau bữa ăn...") },
+                label = { Text(noteLabel) },
+                placeholder = { Text(notePlaceholder) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 3,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -562,7 +580,7 @@ private fun SnoozeDurationSection(
 ) {
     Column {
         Text(
-            text = "⏰ Thời gian nhắc lại",
+            text = stringResource(com.safemed.R.string.reminder_snooze_section),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -570,7 +588,7 @@ private fun SnoozeDurationSection(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Thời gian chờ khi bạn nhấn \"Nhắc lại sau\"",
+            text = stringResource(com.safemed.R.string.reminder_snooze_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -587,7 +605,7 @@ private fun SnoozeDurationSection(
                 FilterChip(
                     selected = snoozeDuration == minutes,
                     onClick = { onSetSnoozeDuration(minutes) },
-                    label = { Text("$minutes phút") },
+                    label = { Text(stringResource(com.safemed.R.string.reminder_snooze_minutes, minutes)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = EmeraldGreen.copy(alpha = 0.2f)
                     ),

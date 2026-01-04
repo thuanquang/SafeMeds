@@ -305,6 +305,7 @@
     <string name="reminder_snooze_15min">15 phút</string>
     <string name="reminder_snooze_30min">30 phút</string>
     <string name="reminder_save">Lưu nhắc nhở</string>
+    <string name="reminder_update">Cập nhật</string>
     <string name="reminder_delete">Xóa nhắc nhở</string>
     <string name="reminder_delete_confirm">Bạn có chắc muốn xóa nhắc nhở này?</string>
     <string name="reminder_saved">Đã lưu nhắc nhở</string>
@@ -325,6 +326,32 @@
     <string name="reminder_validation_no_medicine">Vui lòng nhập tên thuốc</string>
     <string name="home_reminder">💊 Nhắc nhở uống thuốc</string>
     <string name="profile_reminder">Quản lý nhắc nhở</string>
+    <string name="reminder_header_title">💊 Nhắc nhở uống thuốc</string>
+    <string name="reminder_header_subtitle">Quản lý lịch uống thuốc hàng ngày</string>
+    <string name="reminder_create_new">➕ Tạo nhắc nhở mới</string>
+    <string name="reminder_edit_title">✏️ Sửa nhắc nhở</string>
+    <string name="reminder_time_section">⏰ Thời gian nhắc nhở</string>
+    <string name="reminder_time_hint">Chọn các buổi và giờ nhắc nhở. Có thể bỏ qua buổi không cần.</string>
+    <string name="reminder_day_section">📅 Ngày lặp lại</string>
+    <string name="reminder_type_section">💊 Loại nhắc nhở</string>
+    <string name="reminder_type_general_short">Nhắc chung</string>
+    <string name="reminder_type_detailed_short">Nhắc chi tiết</string>
+    <string name="reminder_medicine_placeholder">Nhập tên thuốc...</string>
+    <string name="reminder_dosage_placeholder">VD: 2 viên, 10ml...</string>
+    <string name="reminder_note">Ghi chú (tùy chọn)</string>
+    <string name="reminder_note_placeholder">Uống sau bữa ăn...</string>
+    <string name="reminder_snooze_section">⏰ Thời gian nhắc lại</string>
+    <string name="reminder_snooze_hint">Thời gian chờ khi bạn nhấn "Nhắc lại sau"</string>
+    <string name="reminder_snooze_minutes">%d phút</string>
+    <string name="reminder_default_title">Nhắc uống thuốc</string>
+    <string name="reminder_toggled_on">Đã bật nhắc nhở</string>
+    <string name="reminder_toggled_off">Đã tắt nhắc nhở</string>
+    <string name="reminder_back">Quay lại</string>
+    <string name="reminder_action_edit">Chỉnh sửa</string>
+    <string name="reminder_action_delete">Xóa</string>
+    <string name="error_generic">Có lỗi xảy ra</string>
+    <string name="reminder_error_load">Không thể tải nhắc nhở</string>
+    <string name="reminder_error_save">Không thể lưu nhắc nhở</string>
 </resources>
 
 

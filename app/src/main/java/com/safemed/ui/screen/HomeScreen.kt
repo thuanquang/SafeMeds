@@ -89,7 +89,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.tertiary
             )
         ) {
-            Text("💊 Nhắc nhở uống thuốc", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.home_reminder), style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(16.dp))

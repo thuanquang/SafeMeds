@@ -134,7 +134,7 @@ fun ProfileScreen(
                     // Nhắc nhở uống thuốc
                     ProfileMenuItem(
                         icon = Icons.Default.Notifications,
-                        title = "Nhắc nhở uống thuốc",
+                        title = stringResource(R.string.profile_reminder),
                         onClick = onNavigateToReminder
                     )
 

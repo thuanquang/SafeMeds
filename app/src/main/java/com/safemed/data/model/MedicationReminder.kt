@@ -1,10 +1,12 @@
 package com.safemed.data.model
 
+import android.content.Context
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
+import com.safemed.R
 
 /**
  * Data class đại diện cho lịch nhắc nhở uống thuốc
@@ -197,30 +199,26 @@ data class MedicationReminder(
     }
 
     /**
-     * Format ngày lặp lại để hiển thị
+     * Format ngày lặp lại để hiển thị (localized)
      */
     @Exclude
-    fun getRepeatDisplayText(): String {
+    fun getRepeatDisplayText(context: Context): String {
+        val dayNames = listOf(
+            context.getString(R.string.reminder_day_sun),
+            context.getString(R.string.reminder_day_mon),
+            context.getString(R.string.reminder_day_tue),
+            context.getString(R.string.reminder_day_wed),
+            context.getString(R.string.reminder_day_thu),
+            context.getString(R.string.reminder_day_fri),
+            context.getString(R.string.reminder_day_sat)
+        )
+        
         return when {
-            selectedDays.isEmpty() -> "Mỗi ngày"
-            selectedDays.size == 7 -> "Mỗi ngày"
-            selectedDays.size == 5 && selectedDays.containsAll(listOf(1, 2, 3, 4, 5)) -> "Thứ 2 - Thứ 6"
-            selectedDays.size == 2 && selectedDays.containsAll(listOf(0, 6)) -> "Cuối tuần"
-            else -> selectedDays.sorted().joinToString(", ") { getDayName(it) }
-        }
-    }
-
-    @Exclude
-    private fun getDayName(day: Int): String {
-        return when (day) {
-            0 -> "CN"
-            1 -> "T2"
-            2 -> "T3"
-            3 -> "T4"
-            4 -> "T5"
-            5 -> "T6"
-            6 -> "T7"
-            else -> ""
+            selectedDays.isEmpty() -> context.getString(R.string.reminder_everyday)
+            selectedDays.size == 7 -> context.getString(R.string.reminder_everyday)
+            selectedDays.size == 5 && selectedDays.containsAll(listOf(1, 2, 3, 4, 5)) -> context.getString(R.string.reminder_repeat_weekdays)
+            selectedDays.size == 2 && selectedDays.containsAll(listOf(0, 6)) -> context.getString(R.string.reminder_repeat_weekends)
+            else -> selectedDays.sorted().joinToString(", ") { dayNames.getOrElse(it) { "" } }
         }
     }
 }

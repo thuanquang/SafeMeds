@@ -1,6 +1,7 @@
 package com.safemed.ui.screen.reminder
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,7 +66,7 @@ fun ReminderListScreen(
                 containerColor = EmeraldGreen,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Thêm nhắc nhở")
+                Icon(Icons.Default.Add, contentDescription = stringResource(com.safemed.R.string.reminder_add))
             }
         }
     ) { padding ->
@@ -111,8 +114,8 @@ fun ReminderListScreen(
     showDeleteDialog?.let { reminderId ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { Text("Xóa nhắc nhở") },
-            text = { Text("Bạn có chắc muốn xóa nhắc nhở này không?") },
+            title = { Text(stringResource(com.safemed.R.string.reminder_delete)) },
+            text = { Text(stringResource(com.safemed.R.string.reminder_delete_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -121,12 +124,12 @@ fun ReminderListScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
                 ) {
-                    Text("Xóa")
+                    Text(stringResource(com.safemed.R.string.btn_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = null }) {
-                    Text("Hủy")
+                    Text(stringResource(com.safemed.R.string.btn_cancel))
                 }
             }
         )
@@ -137,13 +140,22 @@ fun ReminderListScreen(
  * Header của màn hình danh sách nhắc nhở
  */
 @Composable
-private fun ReminderListHeader(onNavigateBack: () -> Unit) {
+fun ReminderListHeader(onNavigateBack: () -> Unit) {
+    val isDarkMode = isSystemInDarkTheme()
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(EmeraldGreen, EmeraldGreenDark)
+                    colors = if (isDarkMode) {
+                        listOf(
+                            EmeraldGreenDark.copy(alpha = 0.9f),
+                            EmeraldGreenDark.copy(alpha = 0.7f)
+                        )
+                    } else {
+                        listOf(EmeraldGreen, EmeraldGreenDark)
+                    }
                 )
             )
             .padding(16.dp)
@@ -155,7 +167,7 @@ private fun ReminderListHeader(onNavigateBack: () -> Unit) {
             IconButton(onClick = onNavigateBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "Quay lại",
+                    contentDescription = stringResource(com.safemed.R.string.reminder_back),
                     tint = Color.White
                 )
             }
@@ -164,15 +176,15 @@ private fun ReminderListHeader(onNavigateBack: () -> Unit) {
 
             Column {
                 Text(
-                    text = "💊 Nhắc nhở uống thuốc",
+                    text = stringResource(com.safemed.R.string.reminder_header_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
-                    text = "Quản lý lịch uống thuốc hàng ngày",
+                    text = stringResource(com.safemed.R.string.reminder_header_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.85f)
                 )
             }
         }
@@ -199,7 +211,7 @@ private fun EmptyReminderState(onAddClick: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Chưa có nhắc nhở nào",
+            text = stringResource(com.safemed.R.string.reminder_empty_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
@@ -208,7 +220,7 @@ private fun EmptyReminderState(onAddClick: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Tạo nhắc nhở để không quên uống thuốc đúng giờ",
+            text = stringResource(com.safemed.R.string.reminder_empty_description),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -221,7 +233,7 @@ private fun EmptyReminderState(onAddClick: () -> Unit) {
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Tạo nhắc nhở")
+            Text(stringResource(com.safemed.R.string.reminder_add))
         }
     }
 }
@@ -236,6 +248,8 @@ private fun ReminderCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -260,11 +274,12 @@ private fun ReminderCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
+                    val defaultTitle = stringResource(com.safemed.R.string.reminder_default_title)
                     Text(
                         text = if (reminder.isDetailedReminder && !reminder.medicineName.isNullOrBlank()) {
                             reminder.medicineName!!
                         } else {
-                            "Nhắc uống thuốc"
+                            defaultTitle
                         },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -332,7 +347,7 @@ private fun ReminderCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = reminder.getRepeatDisplayText(),
+                        text = reminder.getRepeatDisplayText(context),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -342,14 +357,14 @@ private fun ReminderCard(
                     IconButton(onClick = onEdit) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Chỉnh sửa",
+                            contentDescription = stringResource(com.safemed.R.string.reminder_action_edit),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
                     IconButton(onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Xóa",
+                            contentDescription = stringResource(com.safemed.R.string.reminder_action_delete),
                             tint = Color.Red.copy(alpha = 0.7f)
                         )
                     }

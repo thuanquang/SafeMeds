@@ -1,44 +1,54 @@
 package com.safemed.data.model
 
+import android.content.Context
+import com.safemed.R
+
 /**
  * Enum đại diện cho 4 buổi trong ngày để nhắc nhở uống thuốc
  * Mỗi buổi có khung giờ mặc định
  */
 enum class TimeSlot(
-    val displayName: String,
+    val displayNameResId: Int,
     val defaultHour: Int,
     val defaultMinute: Int,
     val startHour: Int,
     val endHour: Int
 ) {
     MORNING(
-        displayName = "Sáng",
+        displayNameResId = R.string.reminder_morning,
         defaultHour = 7,
         defaultMinute = 0,
         startHour = 5,
         endHour = 11
     ),
     NOON(
-        displayName = "Trưa",
+        displayNameResId = R.string.reminder_noon,
         defaultHour = 12,
         defaultMinute = 0,
         startHour = 11,
         endHour = 14
     ),
     AFTERNOON(
-        displayName = "Chiều",
+        displayNameResId = R.string.reminder_afternoon,
         defaultHour = 17,
         defaultMinute = 0,
         startHour = 14,
         endHour = 18
     ),
     EVENING(
-        displayName = "Tối",
+        displayNameResId = R.string.reminder_evening,
         defaultHour = 20,
         defaultMinute = 0,
         startHour = 18,
         endHour = 23
     );
+
+    /**
+     * Get localized display name
+     */
+    fun getDisplayName(context: Context): String {
+        return context.getString(displayNameResId)
+    }
 
     /**
      * Format thời gian mặc định thành chuỗi HH:mm

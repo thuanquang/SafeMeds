@@ -1,9 +1,11 @@
 package com.safemed.ui.screen.reminder
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
+import com.safemed.R
 import com.safemed.alarm.ReminderAlarmManager
 import com.safemed.data.model.MedicationReminder
 import com.safemed.data.model.Medicine
@@ -70,16 +72,19 @@ data class AddEditReminderUiState(
  */
 @HiltViewModel
 class AddEditReminderViewModel @Inject constructor(
+    application: Application,
     private val reminderRepository: ReminderRepository,
     private val medicineRepository: MedicineRepository,
     private val reminderAlarmManager: ReminderAlarmManager,
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val reminderId: String? = savedStateHandle["reminderId"]
 
     private val _uiState = MutableStateFlow(AddEditReminderUiState())
     val uiState: StateFlow<AddEditReminderUiState> = _uiState.asStateFlow()
+    
+    private val context get() = getApplication<Application>()
 
     init {
         if (reminderId != null) {
@@ -122,7 +127,7 @@ class AddEditReminderViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = error.message ?: "Không thể tải nhắc nhở"
+                        errorMessage = error.message ?: context.getString(R.string.reminder_error_load)
                     )
                 }
             }
@@ -295,7 +300,7 @@ class AddEditReminderViewModel @Inject constructor(
             state.afternoonTime == null && state.eveningTime == null
         ) {
             _uiState.update {
-                it.copy(errorMessage = "Vui lòng chọn ít nhất một buổi để nhắc nhở")
+                it.copy(errorMessage = context.getString(R.string.reminder_validation_no_time))
             }
             return
         }
@@ -348,7 +353,7 @@ class AddEditReminderViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSaving = false,
-                        errorMessage = error.message ?: "Không thể lưu nhắc nhở"
+                        errorMessage = error.message ?: context.getString(R.string.reminder_error_save)
                     )
                 }
             }

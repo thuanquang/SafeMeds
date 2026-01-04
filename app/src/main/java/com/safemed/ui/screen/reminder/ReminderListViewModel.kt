@@ -1,7 +1,9 @@
 package com.safemed.ui.screen.reminder
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.safemed.R
 import com.safemed.alarm.ReminderAlarmManager
 import com.safemed.data.model.MedicationReminder
 import com.safemed.data.repository.ReminderRepository
@@ -28,12 +30,15 @@ data class ReminderListUiState(
  */
 @HiltViewModel
 class ReminderListViewModel @Inject constructor(
+    application: Application,
     private val reminderRepository: ReminderRepository,
     private val reminderAlarmManager: ReminderAlarmManager
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(ReminderListUiState())
     val uiState: StateFlow<ReminderListUiState> = _uiState.asStateFlow()
+    
+    private val context get() = getApplication<Application>()
 
     init {
         loadReminders()
@@ -77,11 +82,13 @@ class ReminderListViewModel @Inject constructor(
                 }
 
                 _uiState.update {
-                    it.copy(successMessage = if (newActiveState) "Đã bật nhắc nhở" else "Đã tắt nhắc nhở")
+                    it.copy(successMessage = context.getString(
+                        if (newActiveState) R.string.reminder_toggled_on else R.string.reminder_toggled_off
+                    ))
                 }
             }.onFailure { error ->
                 _uiState.update {
-                    it.copy(errorMessage = error.message ?: "Có lỗi xảy ra")
+                    it.copy(errorMessage = error.message ?: context.getString(R.string.error_generic))
                 }
             }
         }
@@ -103,14 +110,14 @@ class ReminderListViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        successMessage = "Đã xóa nhắc nhở"
+                        successMessage = context.getString(R.string.reminder_deleted)
                     )
                 }
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = error.message ?: "Có lỗi xảy ra"
+                        errorMessage = error.message ?: context.getString(R.string.error_generic)
                     )
                 }
             }
