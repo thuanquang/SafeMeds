@@ -269,6 +269,63 @@
     <string name="reauth_password">Mật khẩu</string>
     <string name="reauth_with_password">Xác thực bằng mật khẩu</string>
     <string name="reauth_with_google">🔐 Xác thực bằng Google</string>
+
+    <!-- Medication Reminder -->
+    <string name="reminder_title">Nhắc nhở uống thuốc</string>
+    <string name="reminder_list_title">Danh sách nhắc nhở</string>
+    <string name="reminder_add">Thêm nhắc nhở</string>
+    <string name="reminder_edit">Chỉnh sửa nhắc nhở</string>
+    <string name="reminder_empty_title">Chưa có nhắc nhở nào</string>
+    <string name="reminder_empty_description">Tạo nhắc nhở để không bỏ lỡ giờ uống thuốc</string>
+    <string name="reminder_time_slots">Thời gian nhắc nhở</string>
+    <string name="reminder_morning">Sáng</string>
+    <string name="reminder_noon">Trưa</string>
+    <string name="reminder_afternoon">Chiều</string>
+    <string name="reminder_evening">Tối</string>
+    <string name="reminder_days_selection">Chọn ngày</string>
+    <string name="reminder_everyday">Hàng ngày</string>
+    <string name="reminder_custom_days">Tùy chọn ngày</string>
+    <string name="reminder_day_sun">CN</string>
+    <string name="reminder_day_mon">T2</string>
+    <string name="reminder_day_tue">T3</string>
+    <string name="reminder_day_wed">T4</string>
+    <string name="reminder_day_thu">T5</string>
+    <string name="reminder_day_fri">T6</string>
+    <string name="reminder_day_sat">T7</string>
+    <string name="reminder_type">Loại nhắc nhở</string>
+    <string name="reminder_type_detailed">Chi tiết (thuốc + liều lượng)</string>
+    <string name="reminder_type_general">Tổng quát (chỉ nhắc giờ)</string>
+    <string name="reminder_medicine_name">Tên thuốc</string>
+    <string name="reminder_medicine_name_hint">Nhập hoặc tìm tên thuốc</string>
+    <string name="reminder_dosage">Liều dùng</string>
+    <string name="reminder_dosage_hint">VD: 2 viên, 1 gói, 5ml</string>
+    <string name="reminder_snooze_duration">Thời gian nhắc lại</string>
+    <string name="reminder_snooze_5min">5 phút</string>
+    <string name="reminder_snooze_10min">10 phút</string>
+    <string name="reminder_snooze_15min">15 phút</string>
+    <string name="reminder_snooze_30min">30 phút</string>
+    <string name="reminder_save">Lưu nhắc nhở</string>
+    <string name="reminder_delete">Xóa nhắc nhở</string>
+    <string name="reminder_delete_confirm">Bạn có chắc muốn xóa nhắc nhở này?</string>
+    <string name="reminder_saved">Đã lưu nhắc nhở</string>
+    <string name="reminder_deleted">Đã xóa nhắc nhở</string>
+    <string name="reminder_active">Đang hoạt động</string>
+    <string name="reminder_inactive">Tạm dừng</string>
+    <string name="reminder_notification_title">💊 Nhắc uống thuốc</string>
+    <string name="reminder_notification_body">Đã đến giờ uống thuốc!</string>
+    <string name="reminder_action_taken">✓ Đã uống</string>
+    <string name="reminder_action_snooze">⏰ Nhắc lại sau</string>
+    <string name="reminder_repeat_daily">Hàng ngày</string>
+    <string name="reminder_repeat_weekdays">Ngày trong tuần</string>
+    <string name="reminder_repeat_weekends">Cuối tuần</string>
+    <string name="reminder_repeat_custom">Tùy chỉnh</string>
+    <string name="reminder_repeat_times">%d lần</string>
+    <string name="reminder_validation_no_time">Vui lòng chọn ít nhất 1 thời gian</string>
+    <string name="reminder_validation_no_day">Vui lòng chọn ít nhất 1 ngày</string>
+    <string name="reminder_validation_no_medicine">Vui lòng nhập tên thuốc</string>
+    <string name="home_reminder">💊 Nhắc nhở uống thuốc</string>
+    <string name="profile_reminder">Quản lý nhắc nhở</string>
 </resources>
+
 
 

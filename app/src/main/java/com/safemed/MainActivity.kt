@@ -1,14 +1,19 @@
 package com.safemed
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.ktx.auth
@@ -35,12 +40,26 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
+    
+    // Permission launcher for POST_NOTIFICATIONS (Android 13+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d(TAG, "Notification permission granted")
+        } else {
+            Log.w(TAG, "Notification permission denied")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Apply saved language setting on app start
         applySavedLanguage()
+        
+        // Request notification permission for Android 13+
+        requestNotificationPermission()
 
         // Xử lý deep link nếu có (khi app mở lần đầu từ email link)
         handleEmailLinkIntent(intent)
@@ -122,6 +141,26 @@ class MainActivity : AppCompatActivity() {
             .apply()
     }
 
+    /**
+     * Request POST_NOTIFICATIONS permission for Android 13+
+     */
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d(TAG, "Notification permission already granted")
+                }
+                else -> {
+                    Log.d(TAG, "Requesting notification permission")
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+    
     /**
      * Apply saved language setting from preferences
      */

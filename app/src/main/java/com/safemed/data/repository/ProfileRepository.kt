@@ -210,4 +210,25 @@ class ProfileRepository @Inject constructor(
             false
         }
     }
+
+    /**
+     * Cập nhật ngôn ngữ người dùng vào Firestore
+     * Được gọi khi user thay đổi ngôn ngữ trong Settings
+     * @param languageCode "vi" hoặc "en"
+     */
+    suspend fun updateLanguage(languageCode: String): Result<Unit> {
+        val userId = auth.currentUser?.uid ?: return Result.failure(Exception("User not logged in"))
+        
+        return try {
+            db.collection(USERS_COLLECTION).document(userId)
+                .set(mapOf("language" to languageCode), com.google.firebase.firestore.SetOptions.merge())
+                .await()
+            
+            Log.d(TAG, "Language updated to: $languageCode")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update language", e)
+            Result.failure(e)
+        }
+    }
 }

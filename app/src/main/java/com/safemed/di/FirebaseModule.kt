@@ -1,5 +1,6 @@
 package com.safemed.di
 
+import android.app.AlarmManager
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.firebase.auth.FirebaseAuth
@@ -7,6 +8,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.safemed.BuildConfig
@@ -42,6 +44,18 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseStorage(): FirebaseStorage = Firebase.storage
+
+    @Provides
+    @Singleton
+    fun provideFirebaseMessaging(): FirebaseMessaging = FirebaseMessaging.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideAlarmManager(
+        @ApplicationContext context: Context
+    ): AlarmManager {
+        return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
 
     @Provides
     @Singleton

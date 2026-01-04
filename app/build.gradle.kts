@@ -141,6 +141,14 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     // Firebase Analytics
     implementation("com.google.firebase:firebase-analytics")
+    // Firebase Cloud Messaging - push notifications
+    implementation("com.google.firebase:firebase-messaging")
+
+    // WorkManager for background tasks (medication reminders)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    // Hilt WorkManager integration
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Google Sign-In with Credential Manager
     implementation("androidx.credentials:credentials:1.3.0")

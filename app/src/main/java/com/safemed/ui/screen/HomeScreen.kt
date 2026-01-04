@@ -28,7 +28,8 @@ fun HomeScreen(
     onNavigateToMap: () -> Unit,
     onNavigateToScan: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToDebug: () -> Unit = {} // Thêm tham số mới
+    onNavigateToDebug: () -> Unit = {},
+    onNavigateToReminder: () -> Unit = {} // Thêm navigation đến màn hình nhắc nhở
 ) {
     Column(
         modifier = Modifier
@@ -74,6 +75,21 @@ fun HomeScreen(
             )
         ) {
             Text(stringResource(R.string.home_find_pharmacy), style = MaterialTheme.typography.titleMedium)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Medication Reminder Button
+        Button(
+            onClick = onNavigateToReminder,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiary
+            )
+        ) {
+            Text("💊 Nhắc nhở uống thuốc", style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(16.dp))
