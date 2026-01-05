@@ -349,6 +349,9 @@
     <string name="reminder_validation_no_medicine">Please enter medicine name</string>
     <string name="home_reminder">💊 Medication Reminders</string>
     <string name="profile_reminder">Manage Reminders</string>
+    <string name="notification_action_taken_toast">✓ Medicine taken</string>
+    <string name="notification_action_snooze_toast">⏰ Will remind you in %d minutes</string>
+    <string name="notification_action_snooze_minutes">%d minutes</string>
     <string name="reminder_header_title">💊 Medication Reminders</string>
     <string name="reminder_header_subtitle">Manage your daily medication schedule</string>
     <string name="reminder_create_new">➕ Create New Reminder</string>

@@ -352,6 +352,9 @@
     <string name="reminder_validation_no_medicine">Vui lòng nhập tên thuốc</string>
     <string name="home_reminder">💊 Nhắc nhở uống thuốc</string>
     <string name="profile_reminder">Quản lý nhắc nhở</string>
+    <string name="notification_action_taken_toast">✓ Đã ghi nhận uống thuốc</string>
+    <string name="notification_action_snooze_toast">⏰ Sẽ nhắc lại sau %d phút</string>
+    <string name="notification_action_snooze_minutes">%d phút</string>
     <string name="reminder_header_title">💊 Nhắc nhở uống thuốc</string>
     <string name="reminder_header_subtitle">Quản lý lịch uống thuốc hàng ngày</string>
     <string name="reminder_create_new">➕ Tạo nhắc nhở mới</string>

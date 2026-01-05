@@ -82,7 +82,9 @@ class NotificationHelper @Inject constructor(
         // Intent để mở app khi tap vào notification
         val contentIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("navigate_to", "reminder_list")
+            putExtra("navigate_to", "reminder_detail")
+            putExtra("remind_id", reminderId)
+            putExtra("time_slot", timeSlot)
         }
         val contentPendingIntent = PendingIntent.getActivity(
             context,
@@ -136,12 +138,12 @@ class NotificationHelper @Inject constructor(
             .setContentIntent(contentPendingIntent)
             .addAction(
                 R.drawable.ic_check_circle,
-                "✓ Đã uống",
+                context.getString(R.string.reminder_action_taken),
                 takenPendingIntent
             )
             .addAction(
                 R.drawable.ic_notification_medication,
-                "⏰ Nhắc lại sau ${snoozeDuration} phút",
+                "${context.getString(R.string.reminder_action_snooze)} ${context.getString(R.string.notification_action_snooze_minutes, snoozeDuration)}",
                 snoozePendingIntent
             )
             .setDefaults(NotificationCompat.DEFAULT_ALL)
