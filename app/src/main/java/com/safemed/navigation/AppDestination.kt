@@ -27,6 +27,9 @@ sealed class AppDestination(val route: String) {
     object Support : AppDestination("support")
     object ChangePassword : AppDestination("change_password")
     object Settings : AppDestination("settings")
+    
+    // Chat screen
+    object Chat : AppDestination("chat")
 
     // History screen
     object History : AppDestination("history")

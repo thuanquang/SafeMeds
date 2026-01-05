@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,46 +22,32 @@ import androidx.compose.ui.unit.dp
 import com.safemed.R
 import com.safemed.ui.theme.EmeraldGreen
 
-data class FAQ(
-    val question: String,
-    val answer: String
+/**
+ * Data class for FAQ item with string resource IDs
+ */
+data class FAQItem(
+    val questionResId: Int,
+    val answerResId: Int
 )
 
-private val faqList = listOf(
-    FAQ(
-        question = "Làm sao để quét mã vạch thuốc?",
-        answer = "Trên màn hình chính, nhấn vào nút \"Quét\" ở thanh điều hướng dưới cùng. Hướng camera vào mã vạch trên hộp thuốc và giữ yên trong vài giây để ứng dụng nhận diện."
-    ),
-    FAQ(
-        question = "Thông tin thuốc có chính xác không?",
-        answer = "Thông tin thuốc trong SafeMed được lấy từ các nguồn đáng tin cậy như Cục Quản lý Dược Việt Nam. Tuy nhiên, bạn nên tham khảo ý kiến bác sĩ hoặc dược sĩ trước khi sử dụng thuốc."
-    ),
-    FAQ(
-        question = "Làm sao để tìm nhà thuốc gần tôi?",
-        answer = "Nhấn vào tab \"Nhà thuốc\" trên thanh điều hướng. Ứng dụng sẽ sử dụng vị trí của bạn để hiển thị các nhà thuốc gần nhất. Bạn cần cho phép ứng dụng truy cập vị trí."
-    ),
-    FAQ(
-        question = "Tôi có thể xem lại lịch sử quét không?",
-        answer = "Có. Vào mục \"Hồ sơ\" > \"Lịch sử scan\" để xem danh sách các loại thuốc bạn đã quét trước đó."
-    ),
-    FAQ(
-        question = "Làm sao để đổi mật khẩu?",
-        answer = "Vào \"Hồ sơ\" > \"Đổi mật khẩu\". Nhập mật khẩu hiện tại và mật khẩu mới, sau đó nhấn \"Lưu thay đổi\"."
-    ),
-    FAQ(
-        question = "Ứng dụng có miễn phí không?",
-        answer = "SafeMed hoàn toàn miễn phí với các tính năng cơ bản. Một số tính năng nâng cao có thể yêu cầu gói Premium trong tương lai."
-    ),
-    FAQ(
-        question = "Làm sao để xóa tài khoản?",
-        answer = "Vào \"Hồ sơ\" > \"Bảo mật nâng cao\" > \"Xóa tài khoản\". Lưu ý: Thao tác này không thể hoàn tác."
-    )
+/**
+ * List of FAQ items using string resource IDs for localization
+ */
+private val faqItems = listOf(
+    FAQItem(R.string.support_faq_1_q, R.string.support_faq_1_a),
+    FAQItem(R.string.support_faq_2_q, R.string.support_faq_2_a),
+    FAQItem(R.string.support_faq_3_q, R.string.support_faq_3_a),
+    FAQItem(R.string.support_faq_4_q, R.string.support_faq_4_a),
+    FAQItem(R.string.support_faq_5_q, R.string.support_faq_5_a),
+    FAQItem(R.string.support_faq_6_q, R.string.support_faq_6_a),
+    FAQItem(R.string.support_faq_7_q, R.string.support_faq_7_a)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SupportScreen(
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {}
 ) {
     var expandedFaqIndex by remember { mutableIntStateOf(-1) }
 
@@ -105,15 +93,15 @@ fun SupportScreen(
                     ContactCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Outlined.Phone,
-                        title = "Hotline",
-                        subtitle = "1900-xxxx",
+                        title = stringResource(R.string.support_hotline),
+                        subtitle = stringResource(R.string.support_hotline_number),
                         onClick = { /* TODO: Open phone dialer */ }
                     )
                     ContactCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Outlined.Email,
-                        title = "Email",
-                        subtitle = "support@safemed.vn",
+                        title = stringResource(R.string.support_email_title),
+                        subtitle = stringResource(R.string.support_email_address),
                         onClick = { /* TODO: Open email client */ }
                     )
                 }
@@ -126,16 +114,16 @@ fun SupportScreen(
                 ) {
                     ContactCard(
                         modifier = Modifier.weight(1f),
-                        icon = Icons.Outlined.Chat,
-                        title = "Chat trực tuyến",
-                        subtitle = "8:00 - 22:00",
-                        onClick = { /* TODO: Open chat */ }
+                        icon = Icons.AutoMirrored.Filled.Chat,
+                        title = stringResource(R.string.support_chat_online),
+                        subtitle = stringResource(R.string.support_chat_hours),
+                        onClick = onNavigateToChat
                     )
                     ContactCard(
                         modifier = Modifier.weight(1f),
-                        icon = Icons.Outlined.Send,
-                        title = "Zalo OA",
-                        subtitle = "@SafeMed",
+                        icon = Icons.AutoMirrored.Filled.Send,
+                        title = stringResource(R.string.support_zalo),
+                        subtitle = stringResource(R.string.support_zalo_id),
                         onClick = { /* TODO: Open Zalo */ }
                     )
                 }
@@ -152,9 +140,9 @@ fun SupportScreen(
                 )
             }
 
-            items(faqList.size) { index ->
-                FAQItem(
-                    faq = faqList[index],
+            items(faqItems.size) { index ->
+                FAQItemCard(
+                    faqItem = faqItems[index],
                     isExpanded = expandedFaqIndex == index,
                     onClick = {
                         expandedFaqIndex = if (expandedFaqIndex == index) -1 else index
@@ -228,11 +216,14 @@ private fun ContactCard(
 }
 
 @Composable
-private fun FAQItem(
-    faq: FAQ,
+private fun FAQItemCard(
+    faqItem: FAQItem,
     isExpanded: Boolean,
     onClick: () -> Unit
 ) {
+    val question = stringResource(faqItem.questionResId)
+    val answer = stringResource(faqItem.answerResId)
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -255,7 +246,7 @@ private fun FAQItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = faq.question,
+                    text = question,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
@@ -272,7 +263,7 @@ private fun FAQItem(
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = faq.answer,
+                    text = answer,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
@@ -309,7 +300,7 @@ private fun FeedbackCard() {
                         tint = EmeraldGreen
                     )
                     Text(
-                        text = "Cảm ơn bạn đã gửi góp ý!",
+                        text = stringResource(R.string.support_feedback_success),
                         style = MaterialTheme.typography.bodyLarge,
                         color = EmeraldGreen,
                         fontWeight = FontWeight.Medium
@@ -317,7 +308,7 @@ private fun FeedbackCard() {
                 }
             } else {
                 Text(
-                    text = "Bạn có góp ý hoặc phản hồi gì cho chúng tôi không?",
+                    text = stringResource(R.string.support_feedback_question),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -325,7 +316,7 @@ private fun FeedbackCard() {
                     value = feedbackText,
                     onValueChange = { feedbackText = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Nhập nội dung góp ý...") },
+                    placeholder = { Text(stringResource(R.string.support_feedback_hint)) },
                     minLines = 3,
                     maxLines = 5,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -344,9 +335,9 @@ private fun FeedbackCard() {
                     enabled = feedbackText.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen)
                 ) {
-                    Icon(Icons.Default.Send, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Gửi góp ý")
+                    Text(stringResource(R.string.support_send_feedback))
                 }
             }
         }

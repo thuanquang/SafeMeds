@@ -208,6 +208,32 @@
     <string name="support_email">Email: support@safemed.vn</string>
     <string name="support_phone">Hotline: 1900-xxxx</string>
     <string name="support_hours">Hours: 8:00 AM - 10:00 PM (Mon - Sun)</string>
+    <string name="support_hotline">Hotline</string>
+    <string name="support_hotline_number">1900-xxxx</string>
+    <string name="support_email_title">Email</string>
+    <string name="support_email_address">support@safemed.vn</string>
+    <string name="support_chat_online">Live Chat</string>
+    <string name="support_chat_hours">8:00 - 22:00</string>
+    <string name="support_zalo">Zalo OA</string>
+    <string name="support_zalo_id">@SafeMed</string>
+    <string name="support_feedback_question">Do you have any feedback or suggestions for us?</string>
+    <!-- FAQ Questions -->
+    <string name="support_faq_1_q">How to scan a medicine barcode?</string>
+    <string name="support_faq_1_a">On the home screen, tap the "Scan" button in the bottom navigation. Point your camera at the barcode on the medicine box and hold steady for a few seconds for the app to recognize it.</string>
+    <string name="support_faq_2_q">Is the medicine information accurate?</string>
+    <string name="support_faq_2_a">Medicine information in SafeMed is sourced from reliable sources like the Vietnam Drug Administration. However, you should consult a doctor or pharmacist before using any medication.</string>
+    <string name="support_faq_3_q">How to find a pharmacy near me?</string>
+    <string name="support_faq_3_a">Tap the "Pharmacy" tab in the navigation. The app will use your location to display the nearest pharmacies. You need to allow the app to access your location.</string>
+    <string name="support_faq_4_q">Can I view my scan history?</string>
+    <string name="support_faq_4_a">Yes. Go to "Profile"> "Scan History" to see the list of medicines you have scanned before.</string>
+    <string name="support_faq_5_q">How to change password?</string>
+    <string name="support_faq_5_a">Go to "Profile"> "Change Password". Enter your current password and new password, then tap "Save Changes".</string>
+    <string name="support_faq_6_q">Is the app free?</string>
+    <string name="support_faq_6_a">SafeMed is completely free with basic features. Some advanced features may require a Premium subscription in the future.</string>
+    <string name="support_faq_7_q">How to delete my account?</string>
+    <string name="support_faq_7_a">Go to "Profile"> "Advanced Security"> "Delete Account". Note: This action cannot be undone.</string>
+    <!-- Home Screen Chatbot -->
+    <string name="home_chat_assistant">Hepius Assistant</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
@@ -349,4 +375,23 @@
     <string name="error_generic">An error occurred</string>
     <string name="reminder_error_load">Could not load reminder</string>
     <string name="reminder_error_save">Could not save reminder</string>
+
+    <!-- Chat Screen -->
+    <string name="chat_title">Hepius Bot</string>
+    <string name="chat_status_online">Online</string>
+    <string name="chat_status_offline">Offline</string>
+    <string name="chat_back_home">Back to Home</string>
+    <string name="chat_input_placeholder">Type a message…</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_voice_input">Voice input</string>
+    <string name="chat_attach_file">Attach file</string>
+    <string name="chat_camera">Take photo</string>
+    <string name="chat_welcome_message">Hello! 👋 I\'m Hepius - your SafeMed health assistant.\n\nI can help you with:\n📍 Find medicines from prescriptions\n📖 Guide you through the app\n💊 Provide detailed medicine information\n❓ Answer questions about SafeMed\n⏰ Remind you to take your medicine on time\n\nHow can I help you today? 😊</string>
+    <string name="chat_offline_message">Sorry, Hepius needs internet connection to assist you. Please check your connection and try again! 📶</string>
+    <string name="chat_rate_limit_message">Hepius is a bit busy right now, please wait a few seconds! ⏳</string>
+    <string name="chat_error_message">Something went wrong. Please try again later.</string>
+    <string name="chat_feature_coming_soon">Feature coming soon</string>
+    <string name="chat_clear_history">Clear chat history</string>
+    <string name="chat_clear_history_confirm">Are you sure you want to clear all chat history?</string>
+    <string name="chat_reminder_created">✅ Medication reminder created!</string>
 </resources>
