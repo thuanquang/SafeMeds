@@ -18,6 +18,22 @@
     <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Notification permissions (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Alarm permissions for medication reminders -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- Boot completed permission to reschedule alarms after device restart -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Vibrate permission for notifications -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Wake lock for ensuring notifications are delivered -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application android:name=".SafeMedApplication" android:allowBackup="true" android:icon="@android:drawable/ic_dialog_info" android:label="@string/app_name" android:roundIcon="@android:drawable/ic_dialog_info" android:supportsRtl="true" android:theme="@style/Theme.SafeMed">
 
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop">
@@ -34,6 +50,37 @@
                 <data android:scheme="https" android:host="safemed-ueh.firebaseapp.com" android:pathPrefix="/__/auth/links" />
             </intent-filter>
         </activity>
+
+        <!-- Firebase Cloud Messaging Service -->
+        <service android:name=".service.SafeMedMessagingService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Medication Reminder Alarm Receiver -->
+        <receiver android:name=".alarm.ReminderAlarmReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.safemed.ACTION_SHOW_REMINDER" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Notification Action Receiver (Đã uống, Nhắc lại) -->
+        <receiver android:name=".notification.ReminderActionReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.safemed.ACTION_MARK_TAKEN" />
+                <action android:name="com.safemed.ACTION_SNOOZE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Boot Receiver to reschedule alarms after device restart -->
+        <receiver android:name=".receiver.BootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

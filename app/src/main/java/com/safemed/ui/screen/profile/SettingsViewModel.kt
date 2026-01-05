@@ -4,12 +4,14 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.safemed.data.repository.UserPreferencesRepository
 import com.safemed.data.repository.FirebaseHelper
+import com.safemed.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -34,8 +36,13 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     application: Application,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val firebaseHelper: FirebaseHelper
+    private val firebaseHelper: FirebaseHelper,
+    private val profileRepository: ProfileRepository
 ) : AndroidViewModel(application) {
+
+    companion object {
+        private const val TAG = "SettingsViewModel"
+    }
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -120,8 +127,19 @@ class SettingsViewModel @Inject constructor(
     // ===== Language =====
     
     fun setLanguage(languageCode: String) {
+        // Lưu vào local preferences
         userPreferencesRepository.setLanguage(languageCode)
         _uiState.update { it.copy(language = languageCode) }
+        
+        // Lưu vào Firestore để Cloud Function biết ngôn ngữ gửi notification
+        viewModelScope.launch {
+            val result = profileRepository.updateLanguage(languageCode)
+            if (result.isFailure) {
+                Log.e(TAG, "Failed to sync language to Firestore: ${result.exceptionOrNull()?.message}")
+            } else {
+                Log.d(TAG, "Language synced to Firestore: $languageCode")
+            }
+        }
         
         // Apply language change using AppCompatDelegate
         val localeList = LocaleListCompat.forLanguageTags(languageCode)

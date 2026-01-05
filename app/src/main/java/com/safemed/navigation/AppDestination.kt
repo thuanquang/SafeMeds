@@ -31,6 +31,13 @@ sealed class AppDestination(val route: String) {
     // History screen
     object History : AppDestination("history")
     
+    // Medication Reminder screens
+    object ReminderList : AppDestination("reminder_list")
+    object AddReminder : AppDestination("add_reminder")
+    object EditReminder : AppDestination("edit_reminder/{reminderId}") {
+        fun createRoute(reminderId: String): String = "edit_reminder/$reminderId"
+    }
+    
     // Debug screen (chỉ dùng trong development)
     object Debug : AppDestination("debug")
 }

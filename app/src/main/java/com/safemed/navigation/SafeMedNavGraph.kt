@@ -22,6 +22,8 @@ import com.safemed.ui.screen.profile.SettingsScreen
 import com.safemed.ui.screen.profile.SupportScreen
 import com.safemed.ui.screen.profile.TermsScreen
 import com.safemed.ui.screen.profile.UpdateProfileScreen
+import com.safemed.ui.screen.reminder.AddEditReminderScreen
+import com.safemed.ui.screen.reminder.ReminderListScreen
 
 /**
  * NavHost chính của ứng dụng SafeMed
@@ -74,7 +76,8 @@ fun SafeMedNavGraph(
                 onNavigateToMap = { navController.navigate(AppDestination.Map.route) },
                 onNavigateToScan = { navController.navigate(AppDestination.Scan.route) },
                 onNavigateToProfile = { navController.navigate(AppDestination.Profile.route) },
-                onNavigateToDebug = { navController.navigate(AppDestination.Debug.route) }
+                onNavigateToDebug = { navController.navigate(AppDestination.Debug.route) },
+                onNavigateToReminder = { navController.navigate(AppDestination.ReminderList.route) }
             )
         }
 
@@ -167,6 +170,9 @@ fun SafeMedNavGraph(
                 },
                 onNavigateToSettings = { 
                     navController.navigate(AppDestination.Settings.route) 
+                },
+                onNavigateToReminder = {
+                    navController.navigate(AppDestination.ReminderList.route)
                 }
             )
         }
@@ -233,6 +239,40 @@ fun SafeMedNavGraph(
         composable(AppDestination.Debug.route) {
             DebugScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // ===== Medication Reminder Screens =====
+        
+        // Màn hình danh sách nhắc nhở
+        composable(AppDestination.ReminderList.route) {
+            ReminderListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddReminder = { navController.navigate(AppDestination.AddReminder.route) },
+                onNavigateToEditReminder = { reminderId ->
+                    navController.navigate(AppDestination.EditReminder.createRoute(reminderId))
+                }
+            )
+        }
+
+        // Màn hình thêm nhắc nhở mới
+        composable(AppDestination.AddReminder.route) {
+            AddEditReminderScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Màn hình chỉnh sửa nhắc nhở
+        composable(
+            route = AppDestination.EditReminder.route,
+            arguments = listOf(
+                navArgument("reminderId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val reminderId = backStackEntry.arguments?.getString("reminderId")
+            AddEditReminderScreen(
+                onNavigateBack = { navController.popBackStack() },
+                reminderId = reminderId
             )
         }
     }

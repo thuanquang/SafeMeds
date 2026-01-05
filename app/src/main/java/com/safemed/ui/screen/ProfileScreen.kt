@@ -51,6 +51,7 @@ fun ProfileScreen(
     onNavigateToSupport: () -> Unit = {},
     onNavigateToChangePassword: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToReminder: () -> Unit = {}, // Thêm navigation đến màn hình nhắc nhở
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val currentUser = Firebase.auth.currentUser
@@ -128,6 +129,13 @@ fun ProfileScreen(
                         icon = Icons.Default.History,
                         title = stringResource(R.string.profile_scan_history),
                         onClick = onNavigateToScanHistory
+                    )
+
+                    // Nhắc nhở uống thuốc
+                    ProfileMenuItem(
+                        icon = Icons.Default.Notifications,
+                        title = stringResource(R.string.profile_reminder),
+                        onClick = onNavigateToReminder
                     )
 
                     // Bảo mật nâng cao
