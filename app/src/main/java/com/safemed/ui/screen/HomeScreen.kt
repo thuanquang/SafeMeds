@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -21,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.safemed.R
+import com.safemed.ui.theme.EmeraldGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +33,8 @@ fun HomeScreen(
     onNavigateToScan: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToDebug: () -> Unit = {},
-    onNavigateToReminder: () -> Unit = {} // Thêm navigation đến màn hình nhắc nhở
+    onNavigateToReminder: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -90,6 +95,26 @@ fun HomeScreen(
             )
         ) {
             Text(stringResource(R.string.home_reminder), style = MaterialTheme.typography.titleMedium)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Chat Assistant Button (Hepius)
+        Button(
+            onClick = onNavigateToChat,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = EmeraldGreen
+            )
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.Chat,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(stringResource(R.string.home_chat_assistant), style = MaterialTheme.typography.titleMedium)
         }
         
         Spacer(modifier = Modifier.height(16.dp))

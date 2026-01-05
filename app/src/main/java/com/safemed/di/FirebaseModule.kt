@@ -12,6 +12,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.safemed.BuildConfig
+import com.safemed.data.network.GeminiApiService
+import com.safemed.data.network.RateLimitInterceptor
 import com.safemed.data.network.RouteService
 import dagger.Module
 import dagger.Provides
@@ -22,6 +24,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -101,6 +104,59 @@ object FirebaseModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(RouteService::class.java)
+    }
+
+    // ============================================
+    // Gemini API Dependencies
+    // ============================================
+
+    @Provides
+    @Singleton
+    @Named("GeminiApiKey")
+    fun provideGeminiApiKey(): String {
+        return BuildConfig.GEMINI_API_KEY
+    }
+
+    @Provides
+    @Singleton
+    fun provideRateLimitInterceptor(): RateLimitInterceptor {
+        return RateLimitInterceptor()
+    }
+
+    @Provides
+    @Singleton
+    @Named("GeminiOkHttpClient")
+    fun provideGeminiOkHttpClient(
+        rateLimitInterceptor: RateLimitInterceptor
+    ): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
+        
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(rateLimitInterceptor)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeminiApiService(
+        @Named("GeminiOkHttpClient") okHttpClient: OkHttpClient
+    ): GeminiApiService {
+        return Retrofit.Builder()
+            .baseUrl("https://generativelanguage.googleapis.com/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GeminiApiService::class.java)
     }
 }
 

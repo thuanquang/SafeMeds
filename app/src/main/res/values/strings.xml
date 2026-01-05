@@ -211,6 +211,32 @@
     <string name="support_email">Email: support@safemed.vn</string>
     <string name="support_phone">Hotline: 1900-xxxx</string>
     <string name="support_hours">Thời gian: 8:00 - 22:00 (Thứ 2 - CN)</string>
+    <string name="support_hotline">Hotline</string>
+    <string name="support_hotline_number">1900-xxxx</string>
+    <string name="support_email_title">Email</string>
+    <string name="support_email_address">support@safemed.vn</string>
+    <string name="support_chat_online">Chat trực tuyến</string>
+    <string name="support_chat_hours">8:00 - 22:00</string>
+    <string name="support_zalo">Zalo OA</string>
+    <string name="support_zalo_id">@SafeMed</string>
+    <string name="support_feedback_question">Bạn có góp ý hoặc phản hồi gì cho chúng tôi không?</string>
+    <!-- FAQ Questions -->
+    <string name="support_faq_1_q">Làm sao để quét mã vạch thuốc?</string>
+    <string name="support_faq_1_a">Trên màn hình chính, nhấn vào nút "Quét" ở thanh điều hướng dưới cùng. Hướng camera vào mã vạch trên hộp thuốc và giữ yên trong vài giây để ứng dụng nhận diện.</string>
+    <string name="support_faq_2_q">Thông tin thuốc có chính xác không?</string>
+    <string name="support_faq_2_a">Thông tin thuốc trong SafeMed được lấy từ các nguồn đáng tin cậy như Cục Quản lý Dược Việt Nam. Tuy nhiên, bạn nên tham khảo ý kiến bác sĩ hoặc dược sĩ trước khi sử dụng thuốc.</string>
+    <string name="support_faq_3_q">Làm sao để tìm nhà thuốc gần tôi?</string>
+    <string name="support_faq_3_a">Nhấn vào tab "Nhà thuốc" trên thanh điều hướng. Ứng dụng sẽ sử dụng vị trí của bạn để hiển thị các nhà thuốc gần nhất. Bạn cần cho phép ứng dụng truy cập vị trí.</string>
+    <string name="support_faq_4_q">Tôi có thể xem lại lịch sử quét không?</string>
+    <string name="support_faq_4_a">Có. Vào mục "Hồ sơ"> "Lịch sử scan" để xem danh sách các loại thuốc bạn đã quét trước đó.</string>
+    <string name="support_faq_5_q">Làm sao để đổi mật khẩu?</string>
+    <string name="support_faq_5_a">Vào "Hồ sơ"> "Đổi mật khẩu". Nhập mật khẩu hiện tại và mật khẩu mới, sau đó nhấn "Lưu thay đổi".</string>
+    <string name="support_faq_6_q">Ứng dụng có miễn phí không?</string>
+    <string name="support_faq_6_a">SafeMed hoàn toàn miễn phí với các tính năng cơ bản. Một số tính năng nâng cao có thể yêu cầu gói Premium trong tương lai.</string>
+    <string name="support_faq_7_q">Làm sao để xóa tài khoản?</string>
+    <string name="support_faq_7_a">Vào "Hồ sơ"> "Bảo mật nâng cao"> "Xóa tài khoản". Lưu ý: Thao tác này không thể hoàn tác.</string>
+    <!-- Home Screen Chatbot -->
+    <string name="home_chat_assistant">Trợ lý Hepius</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Cài đặt</string>
@@ -326,6 +352,9 @@
     <string name="reminder_validation_no_medicine">Vui lòng nhập tên thuốc</string>
     <string name="home_reminder">💊 Nhắc nhở uống thuốc</string>
     <string name="profile_reminder">Quản lý nhắc nhở</string>
+    <string name="notification_action_taken_toast">✓ Đã ghi nhận uống thuốc</string>
+    <string name="notification_action_snooze_toast">⏰ Sẽ nhắc lại sau %d phút</string>
+    <string name="notification_action_snooze_minutes">%d phút</string>
     <string name="reminder_header_title">💊 Nhắc nhở uống thuốc</string>
     <string name="reminder_header_subtitle">Quản lý lịch uống thuốc hàng ngày</string>
     <string name="reminder_create_new">➕ Tạo nhắc nhở mới</string>
@@ -352,6 +381,25 @@
     <string name="error_generic">Có lỗi xảy ra</string>
     <string name="reminder_error_load">Không thể tải nhắc nhở</string>
     <string name="reminder_error_save">Không thể lưu nhắc nhở</string>
+
+    <!-- Chat Screen -->
+    <string name="chat_title">Hepius Bot</string>
+    <string name="chat_status_online">Đang hoạt động</string>
+    <string name="chat_status_offline">Ngoại tuyến</string>
+    <string name="chat_back_home">Về trang chủ</string>
+    <string name="chat_input_placeholder">Nhập tin nhắn…</string>
+    <string name="chat_send">Gửi</string>
+    <string name="chat_voice_input">Nhập giọng nói</string>
+    <string name="chat_attach_file">Đính kèm</string>
+    <string name="chat_camera">Chụp ảnh</string>
+    <string name="chat_welcome_message">Xin chào bạn! 👋 Mình là Hepius - trợ lý sức khỏe của SafeMed.\n\nMình có thể giúp bạn:\n📍 Tìm thuốc dựa trên toa\n📖 Hướng dẫn sử dụng ứng dụng\n💊 Cung cấp thông tin chi tiết về thuốc\n❓ Trả lời các câu hỏi về SafeMed\n⏰ Nhắc bạn uống thuốc đúng giờ\n\nBạn cần mình hỗ trợ gì hôm nay? 😊</string>
+    <string name="chat_offline_message">Xin lỗi, Hepius cần kết nối mạng để hỗ trợ bạn. Vui lòng kiểm tra kết nối và thử lại nhé! 📶</string>
+    <string name="chat_rate_limit_message">Hepius đang bận xử lý một chút, bạn chờ mình vài giây nhé! ⏳</string>
+    <string name="chat_error_message">Có lỗi xảy ra. Vui lòng thử lại sau.</string>
+    <string name="chat_feature_coming_soon">Tính năng đang phát triển</string>
+    <string name="chat_clear_history">Xóa lịch sử chat</string>
+    <string name="chat_clear_history_confirm">Bạn có chắc muốn xóa toàn bộ lịch sử chat?</string>
+    <string name="chat_reminder_created">✅ Đã tạo lịch nhắc uống thuốc!</string>
 </resources>
 
 

@@ -24,6 +24,7 @@ import com.safemed.ui.screen.profile.TermsScreen
 import com.safemed.ui.screen.profile.UpdateProfileScreen
 import com.safemed.ui.screen.reminder.AddEditReminderScreen
 import com.safemed.ui.screen.reminder.ReminderListScreen
+import com.safemed.ui.screen.chat.ChatScreen
 
 /**
  * NavHost chính của ứng dụng SafeMed
@@ -77,7 +78,8 @@ fun SafeMedNavGraph(
                 onNavigateToScan = { navController.navigate(AppDestination.Scan.route) },
                 onNavigateToProfile = { navController.navigate(AppDestination.Profile.route) },
                 onNavigateToDebug = { navController.navigate(AppDestination.Debug.route) },
-                onNavigateToReminder = { navController.navigate(AppDestination.ReminderList.route) }
+                onNavigateToReminder = { navController.navigate(AppDestination.ReminderList.route) },
+                onNavigateToChat = { navController.navigate(AppDestination.Chat.route) }
             )
         }
 
@@ -217,6 +219,14 @@ fun SafeMedNavGraph(
         // Màn hình trung tâm hỗ trợ
         composable(AppDestination.Support.route) {
             SupportScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToChat = { navController.navigate(AppDestination.Chat.route) }
+            )
+        }
+
+        // Màn hình Chat với Hepius Bot
+        composable(AppDestination.Chat.route) {
+            ChatScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

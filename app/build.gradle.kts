@@ -31,6 +31,8 @@ android {
         // OpenRouteService API Key - stored in local.properties
         buildConfigField("String", "ORS_API_KEY", "\"${localProperties.getProperty("ORS_API_KEY", "")}\"")
         
+        // Gemini API Key - stored in local.properties
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"")
 
     }
 

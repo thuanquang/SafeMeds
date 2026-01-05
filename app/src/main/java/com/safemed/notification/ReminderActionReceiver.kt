@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import com.safemed.R
 import com.safemed.alarm.ReminderAlarmManager
 import com.safemed.data.model.TimeSlot
 import com.safemed.data.repository.ReminderRepository
@@ -98,7 +99,7 @@ class ReminderActionReceiver : BroadcastReceiver() {
 
         // Show confirmation toast
         CoroutineScope(Dispatchers.Main).launch {
-            Toast.makeText(context, "✓ Đã ghi nhận uống thuốc", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.notification_action_taken_toast), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -152,7 +153,7 @@ class ReminderActionReceiver : BroadcastReceiver() {
 
         // Show confirmation toast
         CoroutineScope(Dispatchers.Main).launch {
-            Toast.makeText(context, "⏰ Sẽ nhắc lại sau $snoozeDuration phút", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.notification_action_snooze_toast, snoozeDuration), Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         // Request notification permission for Android 13+
         requestNotificationPermission()
 
-        // Xử lý deep link nếu có (khi app mở lần đầu từ email link)
+        // Xử lý deep link nếu có (khi app mở lần đầu từ email link hoặc notification)
         handleEmailLinkIntent(intent)
 
         setContent {
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 initial = userPreferencesRepository.getDarkMode()
             )
             
-            SafeMedApp(isDarkMode = isDarkMode)
+            SafeMedApp(isDarkMode = isDarkMode, deepLinkIntent = intent)
         }
     }
 
