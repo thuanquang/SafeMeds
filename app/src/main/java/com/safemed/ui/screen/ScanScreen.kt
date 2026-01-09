@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -73,18 +74,11 @@ import com.safemed.scanner.ImageProcessor
 import com.safemed.scanner.ProcessingResult
 import com.safemed.scanner.ScanResult
 import com.safemed.scanner.ScanType
-import com.safemed.ui.theme.EmeraldGreen
 import com.safemed.ui.theme.SafeMedTheme
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 private const val TAG = "ScanScreen"
-
-// Colors for the scan screen
-private val ScanScreenBackground = Color(0xFF000000)
-private val CameraPlaceholder = Color(0xFF374151)
-private val TextWhite = Color.White
-private val TextGray = Color(0xFF9CA3AF)
 
 /**
  * Trạng thái quét của màn hình
@@ -105,6 +99,13 @@ fun ScanScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    
+    // Stitch Theme Colors
+    val stitchBg = colorResource(id = R.color.stitch_bg)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchTextPrimary = colorResource(id = R.color.stitch_text_primary)
+    val stitchTextSecondary = colorResource(id = R.color.stitch_text_secondary)
     
     // Permission state - sử dụng native ActivityResultContracts
     var hasCameraPermission by remember {
@@ -197,26 +198,29 @@ fun ScanScreen(
         topBar = {
             ScanScreenTopBar(
                 onNavigateBack = onNavigateBack,
-                onNavigateToHistory = onNavigateToHistory
+                onNavigateToHistory = onNavigateToHistory,
+                backgroundColor = stitchBg,
+                contentColor = stitchTextPrimary
             )
         },
-        containerColor = ScanScreenBackground
+        containerColor = stitchBg
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(ScanScreenBackground),
+                .background(stitchBg),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Top spacing
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Camera Preview Viewfinder with Scanner Overlay
             Box(
                 modifier = Modifier
                     .size(300.dp)
-                    .clip(RoundedCornerShape(24.dp)),
+                    .clip(RoundedCornerShape(32.dp))
+                    .border(4.dp, stitchLime, RoundedCornerShape(32.dp)), // Lime border for Stitch theme
                 contentAlignment = Alignment.Center
             ) {
                 // Kiểm tra quyền camera
@@ -234,13 +238,16 @@ fun ScanScreen(
                     CameraPermissionPlaceholder(
                         onRequestPermission = {
                             permissionLauncher.launch(Manifest.permission.CAMERA)
-                        }
+                        },
+                        backgroundColor = stitchDarkGreen,
+                        itemColor = stitchLime
                     )
                 }
 
                 // Scanner corner overlay (luôn hiển thị trên cùng)
                 ScannerCornerOverlay(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    color = stitchLime
                 )
 
                 // Hiển thị loading khi đang quét hoặc xử lý ảnh
@@ -248,7 +255,7 @@ fun ScanScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.6f)),
+                            .background(stitchDarkGreen.copy(alpha = 0.8f)), // Dark Green overlay
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -256,7 +263,7 @@ fun ScanScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             CircularProgressIndicator(
-                                color = EmeraldGreen,
+                                color = stitchLime,
                                 modifier = Modifier.size(48.dp),
                                 strokeWidth = 4.dp
                             )
@@ -264,14 +271,14 @@ fun ScanScreen(
                             Text(
                                 text = if (scanState == ScanState.PROCESSING_IMAGE) 
                                     stringResource(R.string.scan_reading_image) else stringResource(R.string.scan_verifying),
-                                color = TextWhite,
+                                color = Color.White,
                                 fontSize = 14.sp
                             )
                             detectedCodeText?.let { code ->
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = code,
-                                    color = EmeraldGreen,
+                                    color = stitchLime,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -282,11 +289,13 @@ fun ScanScreen(
             }
             
             // Nút Upload ảnh
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             GalleryUploadButton(
                 onClick = { galleryLauncher.launch("image/*") },
-                enabled = scanState == ScanState.IDLE
+                enabled = scanState == ScanState.IDLE,
+                containerColor = stitchDarkGreen,
+                contentColor = stitchLime
             )
 
             // Spacing below camera view
@@ -295,7 +304,7 @@ fun ScanScreen(
             // Instruction Title
             Text(
                 text = stringResource(R.string.scan_medicine_code),
-                color = TextWhite,
+                color = stitchTextPrimary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -306,7 +315,7 @@ fun ScanScreen(
             // Instruction Body Text
             Text(
                 text = stringResource(R.string.scan_auto_instruction),
-                color = TextGray,
+                color = stitchTextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 22.sp,
@@ -317,32 +326,34 @@ fun ScanScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // Status indicator
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .height(56.dp)
-                    .background(
-                        color = when (scanState) {
-                            ScanState.IDLE -> EmeraldGreen.copy(alpha = 0.2f)
-                            ScanState.SCANNING, ScanState.PROCESSING_IMAGE -> EmeraldGreen.copy(alpha = 0.5f)
-                            ScanState.COMPLETED -> EmeraldGreen
+            if (scanState != ScanState.IDLE) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .height(56.dp)
+                        .background(
+                            color = when (scanState) {
+                                ScanState.SCANNING, ScanState.PROCESSING_IMAGE -> stitchLime.copy(alpha = 0.5f)
+                                ScanState.COMPLETED -> stitchLime
+                                else -> Color.Transparent
+                            },
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = when (scanState) {
+                            ScanState.PROCESSING_IMAGE -> stringResource(R.string.scan_status_processing)
+                            ScanState.SCANNING -> stringResource(R.string.scan_status_verifying)
+                            ScanState.COMPLETED -> stringResource(R.string.scan_status_complete)
+                            else -> ""
                         },
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = when (scanState) {
-                        ScanState.IDLE -> stringResource(R.string.scan_status_searching)
-                        ScanState.PROCESSING_IMAGE -> stringResource(R.string.scan_status_processing)
-                        ScanState.SCANNING -> stringResource(R.string.scan_status_verifying)
-                        ScanState.COMPLETED -> stringResource(R.string.scan_status_complete)
-                    },
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                        color = stitchDarkGreen,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             // Bottom padding
@@ -468,12 +479,14 @@ private fun CameraPreviewWithScanner(
  */
 @Composable
 private fun CameraPermissionPlaceholder(
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
+    backgroundColor: Color,
+    itemColor: Color
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(CameraPlaceholder),
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -482,7 +495,7 @@ private fun CameraPermissionPlaceholder(
         ) {
             Text(
                 text = stringResource(R.string.scan_camera_permission_required),
-                color = TextWhite,
+                color = Color.White,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center
             )
@@ -490,12 +503,13 @@ private fun CameraPermissionPlaceholder(
             Button(
                 onClick = onRequestPermission,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldGreen
+                    containerColor = itemColor,
+                    contentColor = backgroundColor
                 )
             ) {
                 Text(
                     text = stringResource(R.string.scan_grant_permission),
-                    color = TextWhite
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -508,25 +522,23 @@ private fun CameraPermissionPlaceholder(
 @Composable
 private fun GalleryUploadButton(
     onClick: () -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    containerColor: Color,
+    contentColor: Color
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = EmeraldGreen.copy(alpha = 0.15f),
-            contentColor = EmeraldGreen,
-            disabledContainerColor = Color.Gray.copy(alpha = 0.1f),
-            disabledContentColor = Color.Gray
+            containerColor = containerColor,
+            contentColor = contentColor,
+            disabledContainerColor = Color.Gray.copy(alpha = 0.5f),
+            disabledContentColor = Color.White
         ),
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
-            .height(48.dp)
-            .border(
-                width = 1.dp,
-                color = if (enabled) EmeraldGreen.copy(alpha = 0.5f) else Color.Gray.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(24.dp)
-            )
+            .height(56.dp)
+            .width(200.dp)
     ) {
         Icon(
             imageVector = Icons.Default.PhotoLibrary,
@@ -536,8 +548,8 @@ private fun GalleryUploadButton(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.scan_from_gallery),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -589,20 +601,23 @@ private suspend fun processGalleryImage(
 @Composable
 private fun ScanScreenTopBar(
     onNavigateBack: () -> Unit,
-    onNavigateToHistory: () -> Unit = {}
+    onNavigateToHistory: () -> Unit = {},
+    backgroundColor: Color,
+    contentColor: Color
 ) {
     TopAppBar(
         title = {
             Column {
                 Text(
                     text = "SafeMed",
-                    color = Color.Black,
+                    color = contentColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
+                // Removed the magnifying glass icon and just kept the slogan text cleanly
                 Text(
                     text = stringResource(R.string.app_slogan),
-                    color = Color.Gray,
+                    color = colorResource(id = R.color.stitch_text_secondary),
                     fontSize = 12.sp
                 )
             }
@@ -612,7 +627,7 @@ private fun ScanScreenTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.Black
+                    tint = contentColor
                 )
             }
         },
@@ -622,25 +637,25 @@ private fun ScanScreenTopBar(
                 Icon(
                     imageVector = Icons.Default.History,
                     contentDescription = stringResource(R.string.history_title),
-                    tint = EmeraldGreen
+                    tint = contentColor
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White
+            containerColor = backgroundColor
         )
     )
 }
 
 @Composable
 private fun ScannerCornerOverlay(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color
 ) {
     Canvas(modifier = modifier) {
         val strokeWidth = 6.dp.toPx()
         val cornerLength = 40.dp.toPx()
         val cornerOffset = 24.dp.toPx() // Offset from edges to account for rounded corners
-        val color = EmeraldGreen
 
         // Top-Left Corner (L-shape)
         // Horizontal line
