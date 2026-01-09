@@ -136,7 +136,7 @@ private fun HomeHeader(userName: String, avatarUrl: String?, onProfileClick: () 
         Surface(
             onClick = onProfileClick,
             shape = CircleShape,
-            color = Color.White,
+            color = colorResource(id = R.color.bg_card),
             shadowElevation = 0.dp,
             modifier = Modifier.size(52.dp)
         ) {
@@ -367,7 +367,7 @@ private fun BentoGridActions(
             onClick = onScanClick,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.bg_card))
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(20.dp)
