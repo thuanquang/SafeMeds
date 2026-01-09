@@ -94,6 +94,25 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Back Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(Color.White, CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.back),
+                        tint = colorResource(id = R.color.stitch_text_primary)
+                    )
+                }
+            }
             
             // Header Card
             ProfileHeaderCard(

@@ -25,6 +25,7 @@ import com.safemed.ui.screen.profile.UpdateProfileScreen
 import com.safemed.ui.screen.reminder.AddEditReminderScreen
 import com.safemed.ui.screen.reminder.ReminderListScreen
 import com.safemed.ui.screen.chat.ChatScreen
+import com.safemed.ui.screen.adherence.AdherenceScreen
 
 /**
  * NavHost chính của ứng dụng SafeMed
@@ -79,7 +80,8 @@ fun SafeMedNavGraph(
                 onNavigateToProfile = { navController.navigate(AppDestination.Profile.route) },
                 onNavigateToDebug = { navController.navigate(AppDestination.Debug.route) },
                 onNavigateToReminder = { navController.navigate(AppDestination.ReminderList.route) },
-                onNavigateToChat = { navController.navigate(AppDestination.Chat.route) }
+                onNavigateToChat = { navController.navigate(AppDestination.Chat.route) },
+                onNavigateToAdherence = { navController.navigate(AppDestination.Adherence.route) }
             )
         }
 
@@ -283,6 +285,13 @@ fun SafeMedNavGraph(
             AddEditReminderScreen(
                 onNavigateBack = { navController.popBackStack() },
                 reminderId = reminderId
+            )
+        }
+
+        // Màn hình thống kê tuân thủ
+        composable(AppDestination.Adherence.route) {
+            AdherenceScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

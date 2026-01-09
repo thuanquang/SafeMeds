@@ -14,7 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Medication
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,7 @@ fun HomeScreen(
     onNavigateToDebug: () -> Unit = {},
     onNavigateToReminder: () -> Unit = {},
     onNavigateToChat: () -> Unit = {},
+    onNavigateToAdherence: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -90,7 +92,8 @@ fun HomeScreen(
                 BentoGridActions(
                     onScanClick = onNavigateToScan,
                     onFindClick = onNavigateToMap,
-                    onAdherenceClick = {}
+                    onAdherenceClick = onNavigateToAdherence,
+                    adherenceScore = uiState.adherenceScore
                 )
                 
                 Spacer(modifier = Modifier.height(100.dp)) // Space for floating bar
@@ -101,7 +104,7 @@ fun HomeScreen(
                 onClick = onNavigateToChat,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = 20.dp, vertical = 40.dp)
+                    .padding(horizontal = 20.dp, vertical = 60.dp)
             )
         }
     }
@@ -115,14 +118,6 @@ private fun HomeHeader(userName: String, avatarUrl: String?, onProfileClick: () 
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(
-                text = stringResource(id = R.string.home_overview),
-                style = MaterialTheme.typography.labelMedium,
-                color = colorResource(id = R.color.stitch_text_secondary),
-                letterSpacing = 1.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = stringResource(id = R.string.home_greeting),
                 style = MaterialTheme.typography.headlineMedium,
@@ -336,7 +331,7 @@ private fun TimelineItem_Active(time: String, name: String, accentColor: Color) 
             contentAlignment = Alignment.Center
         ) {
              Icon(
-                 imageVector = Icons.Outlined.Medication,
+                 painter = painterResource(id = R.drawable.ic_pill),
                  contentDescription = null,
                  tint = colorResource(id = R.color.stitch_dark_green),
                  modifier = Modifier.size(28.dp).rotate(-45f)
@@ -360,7 +355,8 @@ private fun TimelineItem_Active(time: String, name: String, accentColor: Color) 
 private fun BentoGridActions(
     onScanClick: () -> Unit,
     onFindClick: () -> Unit,
-    onAdherenceClick: () -> Unit
+    onAdherenceClick: () -> Unit,
+    adherenceScore: Int
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().height(360.dp),
@@ -500,7 +496,7 @@ private fun BentoGridActions(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Favorite,
+                            imageVector = Icons.Outlined.FavoriteBorder,
                             contentDescription = null,
                             tint = colorResource(id = R.color.stitch_dark_green)
                         )
@@ -522,7 +518,7 @@ private fun BentoGridActions(
                     
                     Column {
                         Text(
-                            text = "98%",
+                            text = "$adherenceScore%",
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Bold,
                             color = colorResource(id = R.color.stitch_dark_green)

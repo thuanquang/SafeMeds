@@ -286,4 +286,53 @@ class ReminderRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * Lấy danh sách log nhắc nhở của user
+     */
+    suspend fun getReminderLogs(limit: Int = 100): Result<List<ReminderLog>> {
+        return try {
+            val userId = currentUserId
+                ?: return Result.failure(Exception("User not logged in"))
+
+            val querySnapshot = db.collection(REMINDER_LOGS_COLLECTION)
+                .whereEqualTo("user_id", userId)
+                .orderBy("action_time", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .get()
+                .await()
+
+            val logs = querySnapshot.toObjects(ReminderLog::class.java)
+            Result.success(logs)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting reminder logs", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Lấy danh sách log nhắc nhở dưới dạng Flow (Realtime updates)
+     */
+    fun getReminderLogsFlow(limit: Int = 100): Flow<List<ReminderLog>> = callbackFlow {
+        val userId = currentUserId
+        if (userId == null) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
+
+        val listener = db.collection(REMINDER_LOGS_COLLECTION)
+            .whereEqualTo("user_id", userId)
+            .orderBy("action_time", Query.Direction.DESCENDING)
+            .limit(limit.toLong())
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e(TAG, "Listen failed for logs.", e)
+                    return@addSnapshotListener
+                }
+                val logs = snapshot?.toObjects(ReminderLog::class.java) ?: emptyList()
+                trySend(logs)
+            }
+        awaitClose { listener.remove() }
+    }
 }

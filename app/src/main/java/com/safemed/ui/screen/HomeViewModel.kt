@@ -3,6 +3,7 @@ package com.safemed.ui.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.safemed.data.model.MedicationReminder
+import com.safemed.data.model.ReminderLog
 import com.safemed.data.repository.ProfileRepository
 import com.safemed.data.repository.ReminderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +26,8 @@ data class HomeUiState(
     val avatarUrl: String? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val scheduleItems: List<HomeScheduleItem> = emptyList()
+    val scheduleItems: List<HomeScheduleItem> = emptyList(),
+    val adherenceScore: Int = 100 // Default, updates closely after load
 )
 
 @HiltViewModel
@@ -44,72 +46,162 @@ class HomeViewModel @Inject constructor(
 
     private fun loadTodaySchedule() {
         viewModelScope.launch {
-            reminderRepository.getRemindersFlow().collect { reminders ->
-                val todayItems = processRemindersForToday(reminders)
-                _uiState.update { it.copy(scheduleItems = todayItems) }
+            kotlinx.coroutines.flow.combine(
+                reminderRepository.getRemindersFlow(),
+                reminderRepository.getReminderLogsFlow(limit = 50)
+            ) { reminders, logs ->
+                // Filter logs for today
+                val calendar = Calendar.getInstance()
+                val todayYear = calendar.get(Calendar.YEAR)
+                val todayDay = calendar.get(Calendar.DAY_OF_YEAR)
+                
+                val todayLogs = logs.filter { log ->
+                    log.actionTime?.toDate()?.let { date ->
+                        val logCal = Calendar.getInstance()
+                        logCal.time = date
+                        logCal.get(Calendar.YEAR) == todayYear && 
+                        logCal.get(Calendar.DAY_OF_YEAR) == todayDay
+                    } ?: false
+                }
+                
+                // Process Adherence Score
+                val stats = calculateAdherenceScore(reminders, logs) // Using all logs for score
+                val score = stats
+
+                val todayItems = processRemindersForToday(reminders, todayLogs)
+                Triple(todayItems, score, false)
+            }.collect { (scheduleItems, score, _) ->
+                _uiState.update { 
+                    it.copy(
+                        scheduleItems = scheduleItems,
+                        adherenceScore = score
+                    ) 
+                }
             }
         }
     }
+    
+    // Quick calculation for adherence score (simplified version of AdherenceViewModel logic)
+    private fun calculateAdherenceScore(reminders: List<MedicationReminder>, logs: List<ReminderLog>): Int {
+        var grandTotalExpected = 0
+        var grandTotalTaken = 0
+        
+        // Helper to check if reminder is active on a specific day of week (0=Sun, ... 6=Sat)
+        fun countExpectedForDate(reminders: List<MedicationReminder>, date: Calendar, isToday: Boolean): Int {
+            val dayOfWeek = date.get(Calendar.DAY_OF_WEEK) - 1
+            val now = Calendar.getInstance()
+            val currentHour = now.get(Calendar.HOUR_OF_DAY)
+            val currentMinute = now.get(Calendar.MINUTE)
+            val currentTimeValue = currentHour * 60 + currentMinute
+            
+            var count = 0
+            for (reminder in reminders) {
+                if (!reminder.isActive) continue
+                if (reminder.selectedDays.isNotEmpty() && !reminder.selectedDays.contains(dayOfWeek)) continue
+                
+                fun checkSlot(timeStr: String?) {
+                    if (timeStr.isNullOrBlank()) return
+                    if (isToday) {
+                        try {
+                            val parts = timeStr.trim().split(":")
+                            if (parts.size >= 2) {
+                                val slotTime = parts[0].toInt() * 60 + parts[1].toInt()
+                                if (slotTime <= currentTimeValue) count++
+                            }
+                        } catch (e: Exception) { }
+                    } else {
+                        count++
+                    }
+                }
+                checkSlot(reminder.morningTime)
+                checkSlot(reminder.noonTime)
+                checkSlot(reminder.afternoonTime)
+                checkSlot(reminder.eveningTime)
+            }
+            return count
+        }
 
-    private fun processRemindersForToday(reminders: List<MedicationReminder>): List<HomeScheduleItem> {
+        // Calculate for last 7 days (including today)
+        for (i in 6 downTo 0) {
+            val targetDate = Calendar.getInstance()
+            targetDate.add(Calendar.DAY_OF_YEAR, -i)
+            val isToday = (i == 0)
+            
+            val startOfDay = targetDate.clone() as Calendar
+            startOfDay.set(Calendar.HOUR_OF_DAY, 0)
+            startOfDay.set(Calendar.MINUTE, 0)
+            startOfDay.set(Calendar.SECOND, 0)
+            
+            val endOfDay = targetDate.clone() as Calendar
+            endOfDay.set(Calendar.HOUR_OF_DAY, 23)
+            endOfDay.set(Calendar.MINUTE, 59)
+            endOfDay.set(Calendar.SECOND, 59)
+            
+            // Fixed: Use total expected only for times that have passed
+            val totalExpected = countExpectedForDate(reminders, targetDate, isToday)
+
+            val takenCount = logs.count { log ->
+                val logTime = log.actionTime?.toDate()?.time ?: 0
+                logTime >= startOfDay.timeInMillis && 
+                logTime <= endOfDay.timeInMillis &&
+                log.actionTaken == "taken"
+            }
+            
+            grandTotalExpected += totalExpected
+            grandTotalTaken += takenCount
+        }
+        
+        return if (grandTotalExpected > 0) {
+            ((grandTotalTaken.toFloat() / grandTotalExpected) * 100).toInt().coerceIn(0, 100)
+        } else {
+            100 // Default to 100% if no medications expected
+        }
+    }
+
+    private fun processRemindersForToday(
+        reminders: List<MedicationReminder>,
+        todayLogs: List<ReminderLog>
+    ): List<HomeScheduleItem> {
         val calendar = Calendar.getInstance()
-        // Calendar.SUNDAY = 1, MONDAY = 2...
-        // MedicationReminder uses 0 = Sunday, 1 = Monday...
         val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
         
-        // Simulating "now" to mark past items as done (optional UI logic)
-        val nowHour = calendar.get(Calendar.HOUR_OF_DAY)
-        val nowMinute = calendar.get(Calendar.MINUTE)
-        val nowTimeVal = nowHour * 60 + nowMinute
-
         val dailyItems = mutableListOf<HomeScheduleItem>()
 
         for (reminder in reminders) {
-            // Check if active
             if (!reminder.isActive) continue
-            
-            // Check day of week (if selectedDays is empty, it means every day)
-            if (reminder.selectedDays.isNotEmpty() && !reminder.selectedDays.contains(currentDayOfWeek)) {
-                continue
-            }
+            if (reminder.selectedDays.isNotEmpty() && !reminder.selectedDays.contains(currentDayOfWeek)) continue
 
-            // Helper to add slot
-            fun addSlot(timeStr: String?) {
+            fun addSlot(timeStr: String?, slotName: String) {
                 if (timeStr.isNullOrBlank()) return
                 
-                try {
-                    val parts = timeStr.split(":")
-                    if (parts.size == 2) {
-                        val h = parts[0].toInt()
-                        val m = parts[1].toInt()
-                        val timeVal = h * 60 + m
-                        
-                        // Simple "isDone" logic: if time passed, assume done (placeholder logic)
-                        val isDone = timeVal < nowTimeVal
-                        
-                        dailyItems.add(
-                            HomeScheduleItem(
-                                time = timeStr,
-                                medicineName = reminder.medicineName ?: "Medicine",
-                                isDone = isDone
-                            )
-                        )
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                // Check if already taken
+                val isTaken = todayLogs.any { 
+                    it.reminderId == reminder.reminderId && 
+                    // Match either the specific time string or the slot name (e.g. "MORNING")
+                    (it.timeSlot.equals(timeStr, ignoreCase = true) || 
+                     it.timeSlot.equals(slotName, ignoreCase = true)) &&
+                    it.actionTaken == "taken"
                 }
+
+                dailyItems.add(
+                    HomeScheduleItem(
+                        time = timeStr,
+                        medicineName = reminder.medicineName ?: "Medicine",
+                        isDone = isTaken
+                    )
+                )
             }
 
-            addSlot(reminder.morningTime)
-            addSlot(reminder.noonTime)
-            addSlot(reminder.afternoonTime)
-            addSlot(reminder.eveningTime)
+            // Pass the exact time string as slot identifier
+            addSlot(reminder.morningTime, "morning")
+            addSlot(reminder.noonTime, "noon")
+            addSlot(reminder.afternoonTime, "afternoon")
+            addSlot(reminder.eveningTime, "evening")
         }
 
-        // Sort by time
         return dailyItems.sortedBy { 
             val parts = it.time.split(":")
-            parts[0].toInt() * 60 + parts[1].toInt()
+            if(parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
         }
     }
 
