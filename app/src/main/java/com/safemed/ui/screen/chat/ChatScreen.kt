@@ -2,20 +2,23 @@ package com.safemed.ui.screen.chat
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -23,9 +26,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -39,24 +45,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.safemed.R
 import com.safemed.data.model.ChatMessage
-import com.safemed.ui.theme.EmeraldGreen
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Màn hình Chat với Hepius Bot
- * 
- * Giao diện:
- * - TopAppBar xanh với avatar bot, tên "Hepius Bot", status "Đang hoạt động"
- * - Nút back "Về trang chủ"
- * - LazyColumn hiển thị tin nhắn (bubble trái/phải)
- * - Input bar với TextField + icons mic/attach/camera + nút gửi
- * 
- * Tính năng:
- * - Debouncing: Disable nút gửi khi đang xử lý
- * - Dark/Light mode support
- * - Locale VI/EN support
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
@@ -72,17 +63,15 @@ fun ChatScreen(
     var inputText by remember { mutableStateOf("") }
     var showMenu by remember { mutableStateOf(false) }
 
-    // Lấy welcome message
     val welcomeMessage = remember { viewModel.getWelcomeMessage() }
+    val stitchBg = colorResource(id = R.color.stitch_bg)
 
-    // Scroll to bottom khi có tin nhắn mới
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
         }
     }
 
-    // Hiển thị error message
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -90,7 +79,6 @@ fun ChatScreen(
         }
     }
 
-    // Hiển thị success message
     LaunchedEffect(uiState.successMessage) {
         uiState.successMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -99,6 +87,7 @@ fun ChatScreen(
     }
 
     Scaffold(
+        containerColor = stitchBg,
         topBar = {
             ChatTopBar(
                 onNavigateBack = onNavigateBack,
@@ -113,42 +102,45 @@ fun ChatScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            ChatInputBar(
-                inputText = inputText,
-                onInputChange = { inputText = it },
-                onSendClick = {
-                    if (inputText.isNotBlank() && !uiState.isSending) {
-                        viewModel.sendMessage(inputText)
-                        inputText = ""
-                        keyboardController?.hide()
+            Column {
+                SuggestionChipsRow(
+                    onChipClick = { 
+                        inputText = it 
                     }
-                },
-                isSending = uiState.isSending,
-                onVoiceClick = {
-                    Toast.makeText(context, context.getString(R.string.chat_feature_coming_soon), Toast.LENGTH_SHORT).show()
-                },
-                onAttachClick = {
-                    Toast.makeText(context, context.getString(R.string.chat_feature_coming_soon), Toast.LENGTH_SHORT).show()
-                },
-                onCameraClick = {
-                    Toast.makeText(context, context.getString(R.string.chat_feature_coming_soon), Toast.LENGTH_SHORT).show()
-                }
-            )
+                )
+                ChatInputBar(
+                    inputText = inputText,
+                    onInputChange = { inputText = it },
+                    onSendClick = {
+                        if (inputText.isNotBlank() && !uiState.isSending) {
+                            viewModel.sendMessage(inputText)
+                            inputText = ""
+                            keyboardController?.hide()
+                        }
+                    },
+                    isSending = uiState.isSending,
+                    onVoiceClick = {
+                        Toast.makeText(context, context.getString(R.string.chat_feature_coming_soon), Toast.LENGTH_SHORT).show()
+                    },
+                    onHashClick = {
+                         Toast.makeText(context, context.getString(R.string.chat_feature_coming_soon), Toast.LENGTH_SHORT).show()
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = EmeraldGreen
+                    color = colorResource(id = R.color.stitch_dark_green)
                 )
             } else {
-                // Tạo danh sách tin nhắn với welcome message nếu rỗng
                 val displayMessages = if (uiState.messages.isEmpty()) {
                     listOf(ChatMessage.createAssistantMessage(welcomeMessage))
                 } else {
@@ -158,14 +150,13 @@ fun ChatScreen(
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     items(displayMessages, key = { it.messageId.ifEmpty { it.hashCode().toString() } }) { message ->
                         ChatMessageBubble(message = message)
                     }
 
-                    // Hiển thị typing indicator khi đang gửi
                     if (uiState.isSending) {
                         item {
                             TypingIndicator()
@@ -177,10 +168,6 @@ fun ChatScreen(
     }
 }
 
-/**
- * TopAppBar cho ChatScreen
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatTopBar(
     onNavigateBack: () -> Unit,
@@ -189,125 +176,117 @@ private fun ChatTopBar(
     onDismissMenu: () -> Unit,
     onClearHistory: () -> Unit
 ) {
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+    val darkGreen = colorResource(id = R.color.stitch_text_primary)
+    val lime = colorResource(id = R.color.stitch_lime)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Left: Back Button + Title
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                onClick = onNavigateBack,
+                shape = CircleShape,
+                color = Color.White,
+                shadowElevation = 0.dp,
+                modifier = Modifier.size(44.dp)
             ) {
-                // Bot Avatar
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🤖",
-                        fontSize = 24.sp
-                    )
-                }
-                
-                // Bot name and status
-                Column {
-                    Text(
-                        text = stringResource(R.string.chat_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF4ADE80)) // Green dot
-                        )
-                        Text(
-                            text = stringResource(R.string.chat_status_online),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                    }
-                }
-            }
-        },
-        navigationIcon = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onNavigateBack) {
+                Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
-                        tint = Color.White
+                        tint = darkGreen
                     )
                 }
             }
-        },
-        actions = {
-            Box {
-                IconButton(onClick = onMenuClick) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = "Menu",
-                        tint = Color.White
-                    )
-                }
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = onDismissMenu
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                Text(
+                    text = stringResource(R.string.chat_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = darkGreen
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.chat_clear_history)) },
-                        onClick = onClearHistory
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(lime)
+                    )
+                    Text(
+                        text = stringResource(R.string.chat_status_online),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorResource(id = R.color.stitch_text_secondary),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
                     )
                 }
             }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = EmeraldGreen,
-            titleContentColor = Color.White,
-            navigationIconContentColor = Color.White
-        )
-    )
+        }
+
+        // Right: Menu
+        Box {
+            Surface(
+                onClick = onMenuClick,
+                shape = CircleShape,
+                color = Color.White,
+                shadowElevation = 0.dp,
+                modifier = Modifier.size(44.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = "Menu",
+                        tint = darkGreen
+                    )
+                }
+            }
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = onDismissMenu,
+                modifier = Modifier.background(Color.White)
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.chat_clear_history), color = darkGreen) },
+                    onClick = onClearHistory
+                )
+            }
+        }
+    }
 }
 
-/**
- * Chat message bubble component
- * Supports Markdown rendering for AI responses
- */
 @Composable
 private fun ChatMessageBubble(message: ChatMessage) {
     val isFromUser = message.isFromUser()
-    val isDarkTheme = isSystemInDarkTheme()
     
-    // Colors based on role and theme
-    // Dark mode: Bot uses surfaceContainerHigh for better contrast
-    // Light mode: Bot uses white with subtle border
     val bubbleColor = if (isFromUser) {
-        EmeraldGreen
+        Color.White
     } else {
-        if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+        colorResource(id = R.color.stitch_dark_green)
     }
     
     val textColor = if (isFromUser) {
-        Color.White
+        colorResource(id = R.color.stitch_text_primary)
     } else {
-        if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color(0xFF1F2937)
+        Color.White
     }
     
     val bubbleShape = if (isFromUser) {
-        RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
+        RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp)
     } else {
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
+        RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp)
     }
 
-    // Strip reminder action tags from display (they are processed by ViewModel)
     val displayContent = message.content
         .replace(Regex("\\[REMINDER_ACTION\\][\\s\\S]*?\\[/REMINDER_ACTION\\]"), "")
         .trim()
@@ -316,89 +295,70 @@ private fun ChatMessageBubble(message: ChatMessage) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isFromUser) Alignment.End else Alignment.Start
     ) {
-        // Message bubble
         Surface(
             shape = bubbleShape,
             color = bubbleColor,
-            shadowElevation = if (!isFromUser && !isDarkTheme) 1.dp else 0.dp,
-            border = if (!isFromUser) {
-                if (isDarkTheme) {
-                    androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                } else {
-                    androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E7EB))
-                }
-            } else null,
+            shadowElevation = 0.dp,
             modifier = Modifier.widthIn(max = 300.dp)
         ) {
-            // Render markdown for AI messages, plain text for user messages
-            Text(
-                text = if (isFromUser) {
-                    AnnotatedString(displayContent)
-                } else {
-                    parseSimpleMarkdown(displayContent, textColor)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor,
-                modifier = Modifier.padding(12.dp)
-            )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = if (isFromUser) {
+                        AnnotatedString(displayContent)
+                    } else {
+                        parseSimpleMarkdown(displayContent, textColor)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor,
+                    lineHeight = 22.sp
+                )
+            }
         }
         
-        // Timestamp
+        val authorText = if (isFromUser) stringResource(R.string.chat_sender_you) else stringResource(R.string.chat_sender_bot)
         Text(
-            text = formatTimestamp(message.getTimestampMillis()),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp, start = 4.dp, end = 4.dp)
+            text = "$authorText • ${formatTimestamp(message.getTimestampMillis())}",
+            style = MaterialTheme.typography.labelSmall,
+            color = colorResource(id = R.color.stitch_text_secondary),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 8.dp, start = 4.dp, end = 4.dp)
         )
     }
 }
 
-/**
- * Typing indicator khi AI đang xử lý
- */
 @Composable
-private fun TypingIndicator() {
-    val isDarkTheme = isSystemInDarkTheme()
+private fun SuggestionChipsRow(onChipClick: (String) -> Unit) {
+    val chips = listOf(
+        stringResource(R.string.chip_yes_log),
+        stringResource(R.string.chip_tell_more),
+        stringResource(R.string.chip_scan)
+    )
     
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(bottom = 12.dp)
     ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp),
-            color = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-            shadowElevation = if (!isDarkTheme) 1.dp else 0.dp,
-            border = if (isDarkTheme) {
-                androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            } else {
-                androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E7EB))
-            }
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+        items(chips) { chip ->
+            Surface(
+                onClick = { onChipClick(chip) },
+                shape = RoundedCornerShape(50),
+                color = Color.White,
+                border = androidx.compose.foundation.BorderStroke(1.dp, colorResource(id = R.color.stitch_find_bg).copy(alpha = 0.5f))
             ) {
-                repeat(3) { index ->
-                    val alpha = when (index) {
-                        0 -> 0.4f
-                        1 -> 0.7f
-                        else -> 1f
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(EmeraldGreen.copy(alpha = alpha))
-                    )
-                }
+                Text(
+                    text = chip,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.stitch_text_primary),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                )
             }
         }
     }
 }
 
-/**
- * Input bar ở bottom
- */
 @Composable
 private fun ChatInputBar(
     inputText: String,
@@ -406,125 +366,113 @@ private fun ChatInputBar(
     onSendClick: () -> Unit,
     isSending: Boolean,
     onVoiceClick: () -> Unit,
-    onAttachClick: () -> Unit,
-    onCameraClick: () -> Unit
+    onHashClick: () -> Unit
 ) {
+    val darkGreen = colorResource(id = R.color.stitch_dark_green)
+    val lime = colorResource(id = R.color.stitch_lime)
+
     Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp
+        color = darkGreen,
+        shape = RoundedCornerShape(100.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .height(72.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(start = 20.dp, end = 8.dp)
         ) {
-            // Input field
-            OutlinedTextField(
-                value = inputText,
-                onValueChange = onInputChange,
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.chat_input_placeholder),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                shape = RoundedCornerShape(24.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EmeraldGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    cursorColor = EmeraldGreen
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { onSendClick() }),
-                singleLine = true,
-                trailingIcon = {
-                    Row {
-                        // Voice input icon
-                        IconButton(
-                            onClick = onVoiceClick,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Mic,
-                                contentDescription = stringResource(R.string.chat_voice_input),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        // Attach file icon
-                        IconButton(
-                            onClick = onAttachClick,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.AttachFile,
-                                contentDescription = stringResource(R.string.chat_attach_file),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        // Camera icon
-                        IconButton(
-                            onClick = onCameraClick,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.CameraAlt,
-                                contentDescription = stringResource(R.string.chat_camera),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                }
+            // Plus Icon
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+                tint = Color.White.copy(alpha = 0.5f),
+                modifier = Modifier.clickable { onHashClick() }
             )
             
-            // Send button
-            IconButton(
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Input Field
+            Box(modifier = Modifier.weight(1f)) {
+                if (inputText.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.chat_input_placeholder),
+                        color = Color.White.copy(alpha = 0.5f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                BasicTextField(
+                    value = inputText,
+                    onValueChange = onInputChange,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                    cursorBrush = SolidColor(lime),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { onSendClick() }),
+                    singleLine = true
+                )
+            }
+            
+            // Mic Icon
+            Icon(
+                imageVector = Icons.Default.Mic,
+                contentDescription = "Voice",
+                tint = Color.White.copy(alpha = 0.5f),
+                modifier = Modifier.clickable { onVoiceClick() }
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Send Button
+            Surface(
                 onClick = onSendClick,
-                enabled = inputText.isNotBlank() && !isSending,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (inputText.isNotBlank() && !isSending) EmeraldGreen 
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
+                shape = CircleShape,
+                color = if (isSending) Color.Gray else lime,
+                modifier = Modifier.size(56.dp)
             ) {
-                if (isSending) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Send,
-                        contentDescription = stringResource(R.string.chat_send),
-                        tint = if (inputText.isNotBlank()) Color.White 
-                               else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
+                Box(contentAlignment = Alignment.Center) {
+                    if (isSending) {
+                        CircularProgressIndicator(
+                            color = darkGreen,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                            contentDescription = "Send",
+                            tint = darkGreen,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .rotate(-45f)
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-/**
- * Format timestamp thành "HH:mm"
- */
-private fun formatTimestamp(timestampMillis: Long): String {
-    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestampMillis))
+@Composable
+private fun TypingIndicator() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 4.dp),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Text(
+            text = stringResource(R.string.chat_typing),
+            style = MaterialTheme.typography.labelSmall,
+            color = colorResource(id = R.color.stitch_text_secondary),
+            fontStyle = FontStyle.Italic
+        )
+    }
 }
-/**
- * Parse simple Markdown to AnnotatedString
- * Supports: **bold**, *italic*, `code`, and emojis
- */
+
+private fun formatTimestamp(timestampMillis: Long): String {
+    val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+    return sdf.format(Date(timestampMillis)).uppercase()
+}
+
 private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString {
     return buildAnnotatedString {
         var currentIndex = 0
@@ -532,10 +480,8 @@ private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString
         val italicPattern = Regex("(?<!\\*)\\*([^*]+)\\*(?!\\*)")
         val codePattern = Regex("`([^`]+)`")
         
-        // Combine all patterns
         val allMatches = mutableListOf<Triple<Int, Int, Pair<String, SpanStyle>>>()
         
-        // Find bold matches
         boldPattern.findAll(text).forEach { match ->
             allMatches.add(Triple(
                 match.range.first,
@@ -544,7 +490,6 @@ private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString
             ))
         }
         
-        // Find italic matches
         italicPattern.findAll(text).forEach { match ->
             allMatches.add(Triple(
                 match.range.first,
@@ -553,7 +498,6 @@ private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString
             ))
         }
         
-        // Find code matches
         codePattern.findAll(text).forEach { match ->
             allMatches.add(Triple(
                 match.range.first,
@@ -565,19 +509,14 @@ private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString
             ))
         }
         
-        // Sort by start index
         allMatches.sortBy { it.first }
         
-        // Build annotated string
         var lastEnd = 0
         allMatches.forEach { (start, end, content) ->
-            // Avoid overlapping matches
             if (start >= lastEnd) {
-                // Append text before this match
                 if (start > lastEnd) {
                     append(text.substring(lastEnd, start))
                 }
-                // Append styled text
                 withStyle(content.second) {
                     append(content.first)
                 }
@@ -585,7 +524,6 @@ private fun parseSimpleMarkdown(text: String, textColor: Color): AnnotatedString
             }
         }
         
-        // Append remaining text
         if (lastEnd < text.length) {
             append(text.substring(lastEnd))
         }

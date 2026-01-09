@@ -23,6 +23,24 @@
     <string name="no_info">Không có thông tin</string>
     <string name="unknown">Không xác định</string>
 
+    <!-- New Home Screen -->
+    <string name="home_overview">TỔNG QUAN</string>
+    <string name="home_greeting">Chào buổi sáng,</string>
+    <string name="home_medication">Lịch uống</string>
+    <string name="home_schedule">Thuốc</string>
+    <string name="home_live">TRỰC TIẾP</string>
+    <string name="home_scan">Quét</string>
+    <string name="home_meds">Thuốc</string>
+    <string name="home_scan_desc">Xác thực thuốc thật giả an toàn</string>
+    <string name="home_start">BẮT ĐẦU</string>
+    <string name="home_find">Tìm kiếm</string>
+    <string name="home_find_desc">Tìm kiếm và định vị nhà thuốc gần bạn nhất</string>
+    <string name="home_search_db">TRA CỨU</string>
+    <string name="home_weekly">TUẦN NÀY</string>
+    <string name="home_adherence">TUÂN THỦ</string>
+    <string name="home_ask_ai">Hepius Bot</string>
+    <string name="home_ai_hint">Người bạn AI thông minh</string>
+
     <!-- Login Screen -->
     <string name="login_title">Đăng nhập</string>
     <string name="login_email">Email</string>
@@ -321,6 +339,7 @@
     <string name="reminder_type">Loại nhắc nhở</string>
     <string name="reminder_type_detailed">Chi tiết (thuốc + liều lượng)</string>
     <string name="reminder_type_general">Tổng quát (chỉ nhắc giờ)</string>
+    <string name="reminder_repeat_daily_label">LẶP LẠI HÀNG NGÀY</string>
     <string name="reminder_medicine_name">Tên thuốc</string>
     <string name="reminder_medicine_name_hint">Nhập hoặc tìm tên thuốc</string>
     <string name="reminder_dosage">Liều dùng</string>
@@ -355,7 +374,7 @@
     <string name="notification_action_taken_toast">✓ Đã ghi nhận uống thuốc</string>
     <string name="notification_action_snooze_toast">⏰ Sẽ nhắc lại sau %d phút</string>
     <string name="notification_action_snooze_minutes">%d phút</string>
-    <string name="reminder_header_title">💊 Nhắc nhở uống thuốc</string>
+    <string name="reminder_header_title">Nhắc nhở uống thuốc</string>
     <string name="reminder_header_subtitle">Quản lý lịch uống thuốc hàng ngày</string>
     <string name="reminder_create_new">➕ Tạo nhắc nhở mới</string>
     <string name="reminder_edit_title">✏️ Sửa nhắc nhở</string>
@@ -384,10 +403,10 @@
 
     <!-- Chat Screen -->
     <string name="chat_title">Hepius Bot</string>
-    <string name="chat_status_online">Đang hoạt động</string>
+    <string name="chat_status_online">TRỰC TUYẾN</string>
     <string name="chat_status_offline">Ngoại tuyến</string>
     <string name="chat_back_home">Về trang chủ</string>
-    <string name="chat_input_placeholder">Nhập tin nhắn…</string>
+    <string name="chat_input_placeholder">Hỏi Hepius Bot...</string>
     <string name="chat_send">Gửi</string>
     <string name="chat_voice_input">Nhập giọng nói</string>
     <string name="chat_attach_file">Đính kèm</string>
@@ -396,10 +415,37 @@
     <string name="chat_offline_message">Xin lỗi, Hepius cần kết nối mạng để hỗ trợ bạn. Vui lòng kiểm tra kết nối và thử lại nhé! 📶</string>
     <string name="chat_rate_limit_message">Hepius đang bận xử lý một chút, bạn chờ mình vài giây nhé! ⏳</string>
     <string name="chat_error_message">Có lỗi xảy ra. Vui lòng thử lại sau.</string>
-    <string name="chat_feature_coming_soon">Tính năng đang phát triển</string>
+    <string name="chat_feature_coming_soon">Tính năng này sắp ra mắt</string>
     <string name="chat_clear_history">Xóa lịch sử chat</string>
     <string name="chat_clear_history_confirm">Bạn có chắc muốn xóa toàn bộ lịch sử chat?</string>
     <string name="chat_reminder_created">✅ Đã tạo lịch nhắc uống thuốc!</string>
+    
+    <!-- New Chat UI Strings -->
+    <string name="chat_typing">Hepius Bot đang nhập...</string>
+    <string name="chat_sender_you">BẠN</string>
+    <string name="chat_sender_bot">HEPIUS BOT</string>
+    <string name="chip_yes_log">CÓ, GHI LẠI</string>
+    <string name="chip_tell_more">CHO TÔI BIẾT THÊM</string>
+    <string name="chip_scan">QUÉT LỌ THUỐC</string>
+
+    <!-- Profile Redesign Strings -->
+    <string name="profile_personal_info">Thông tin cá nhân</string>
+    <string name="profile_edit_label">Chỉnh sửa thông tin tài khoản</string>
+    <string name="profile_view_log">Xem nhật ký</string>
+    <string name="profile_reminders_short">Nhắc nhở</string>
+    <string name="profile_security_short">Bảo mật</string>
+    <string name="profile_settings_short">Cài đặt</string>
+    <string name="profile_help_center">Trung tâm trợ giúp</string>
+    <string name="profile_logout_caps">ĐĂNG XUẤT</string>
+    <string name="profile_bronze_member">Thành viên Đồng</string>
+    
+    <!-- Profile Redesign Update V2 -->
+    <string name="settings_title_caps">CÀI ĐẶT</string>
+    <string name="update_profile_subtitle_v2">Thay đổi thông tin cá nhân</string>
+    <string name="label_fullname_caps">HỌ VÀ TÊN</string>
+    <string name="label_email_caps">EMAIL</string>
+    <string name="btn_save_changes">Lưu thay đổi</string>
+    <string name="msg_last_updated">Cập nhật lần cuối hôm nay</string>
 </resources>
 
 

@@ -20,6 +20,24 @@
     <string name="no_info">No information</string>
     <string name="unknown">Unknown</string>
 
+    <!-- New Home Screen -->
+    <string name="home_overview">OVERVIEW</string>
+    <string name="home_greeting">Good Morning,</string>
+    <string name="home_medication">Medication</string>
+    <string name="home_schedule">Schedule</string>
+    <string name="home_live">LIVE</string>
+    <string name="home_scan">Scan</string>
+    <string name="home_meds">Meds</string>
+    <string name="home_scan_desc">Verify safety and authenticity</string>
+    <string name="home_start">START</string>
+    <string name="home_find">Find</string>
+    <string name="home_find_desc">Locate and find nearest pharmacies</string>
+    <string name="home_search_db">SEARCH DB</string>
+    <string name="home_weekly">WEEKLY</string>
+    <string name="home_adherence">ADHERENCE</string>
+    <string name="home_ask_ai">Hepius Bot</string>
+    <string name="home_ai_hint">Smart AI Companion</string>
+
     <!-- Login Screen -->
     <string name="login_title">Login</string>
     <string name="login_email">Email</string>
@@ -318,6 +336,7 @@
     <string name="reminder_type">Reminder Type</string>
     <string name="reminder_type_detailed">Detailed (Medicine + Dosage)</string>
     <string name="reminder_type_general">General (Time Only)</string>
+    <string name="reminder_repeat_daily_label">REPEAT DAILY</string>
     <string name="reminder_medicine_name">Medicine Name</string>
     <string name="reminder_medicine_name_hint">Enter or search medicine name</string>
     <string name="reminder_dosage">Dosage</string>
@@ -352,7 +371,7 @@
     <string name="notification_action_taken_toast">✓ Medicine taken</string>
     <string name="notification_action_snooze_toast">⏰ Will remind you in %d minutes</string>
     <string name="notification_action_snooze_minutes">%d minutes</string>
-    <string name="reminder_header_title">💊 Medication Reminders</string>
+    <string name="reminder_header_title">Medication Reminders</string>
     <string name="reminder_header_subtitle">Manage your daily medication schedule</string>
     <string name="reminder_create_new">➕ Create New Reminder</string>
     <string name="reminder_edit_title">✏️ Edit Reminder</string>
@@ -381,10 +400,10 @@
 
     <!-- Chat Screen -->
     <string name="chat_title">Hepius Bot</string>
-    <string name="chat_status_online">Online</string>
-    <string name="chat_status_offline">Offline</string>
+    <string name="chat_status_online">ONLINE</string>
+    <string name="chat_status_offline">OFFLINE</string>
     <string name="chat_back_home">Back to Home</string>
-    <string name="chat_input_placeholder">Type a message…</string>
+    <string name="chat_input_placeholder">Ask Hepius Bot...</string>
     <string name="chat_send">Send</string>
     <string name="chat_voice_input">Voice input</string>
     <string name="chat_attach_file">Attach file</string>
@@ -397,4 +416,30 @@
     <string name="chat_clear_history">Clear chat history</string>
     <string name="chat_clear_history_confirm">Are you sure you want to clear all chat history?</string>
     <string name="chat_reminder_created">✅ Medication reminder created!</string>
+    
+    <!-- New Chat UI Strings -->
+    <string name="chat_typing">Hepius Bot is typing...</string>
+    <string name="chat_sender_you">YOU</string>
+    <string name="chat_sender_bot">HEPIUS BOT</string>
+    <string name="chip_yes_log">YES, LOG IT</string>
+    <string name="chip_tell_more">TELL ME MORE</string>
+    <string name="chip_scan">SCAN PILL BOTTLE</string>
+    <!-- Profile Redesign Strings -->
+    <string name="profile_personal_info">Personal Info</string>
+    <string name="profile_edit_label">Edit account info</string>
+    <string name="profile_view_log">View Log</string>
+    <string name="profile_reminders_short">Reminders</string>
+    <string name="profile_security_short">Security</string>
+    <string name="profile_settings_short">Settings</string>
+    <string name="profile_help_center">Help Center</string>
+    <string name="profile_logout_caps">LOG OUT</string>
+    <string name="profile_bronze_member">Bronze Member</string>
+
+    <!-- Profile Redesign Update V2 -->
+    <string name="settings_title_caps">SETTINGS</string>
+    <string name="update_profile_subtitle_v2">Change personal information</string>
+    <string name="label_fullname_caps">FULL NAME</string>
+    <string name="label_email_caps">EMAIL</string>
+    <string name="btn_save_changes">Save Changes</string>
+    <string name="msg_last_updated">Last updated today</string>
 </resources>

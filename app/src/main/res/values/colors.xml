@@ -13,6 +13,14 @@
     <color name="success_green">#1ABC64</color>
     <color name="warning_orange">#F2C94C</color>
     <color name="muted_gray">#9EA5AB</color>
+
+    <!-- Stitch Design Colors -->
+    <color name="stitch_dark_green">#0D3B35</color>
+    <color name="stitch_lime">#DEFF7D</color>
+    <color name="stitch_bg">#F2F4F1</color>
+    <color name="stitch_find_bg">#DFECEA</color>
+    <color name="stitch_text_primary">#0D3B35</color>
+    <color name="stitch_text_secondary">#7A8F8C</color>
 </resources>
 
 
