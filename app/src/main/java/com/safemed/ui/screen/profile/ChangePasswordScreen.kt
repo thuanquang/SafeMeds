@@ -1,8 +1,11 @@
 package com.safemed.ui.screen.profile
 
 import android.app.Activity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -24,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.safemed.R
 import com.safemed.ui.component.ReauthDialog
-import com.safemed.ui.theme.EmeraldGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +38,14 @@ fun ChangePasswordScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Colors
+    val stitchBg = colorResource(id = R.color.stitch_bg)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchTextPrimary = colorResource(id = R.color.stitch_text_primary)
+    val stitchTextSecondary = colorResource(id = R.color.stitch_text_secondary)
+    val bgCard = colorResource(id = R.color.bg_card)
 
     // Password visibility states
     var currentPasswordVisible by remember { mutableStateOf(false) }
@@ -77,21 +88,26 @@ fun ChangePasswordScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        if (uiState.hasPasswordProvider) stringResource(R.string.change_password_title) else stringResource(R.string.change_password_set_password)
+                        if (uiState.hasPasswordProvider) stringResource(R.string.change_password_title) else stringResource(R.string.change_password_set_password),
+                        fontWeight = FontWeight.Bold,
+                        color = stitchTextPrimary
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = stringResource(R.string.back),
+                            tint = stitchTextPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = EmeraldGreen,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = stitchBg
                 )
             )
         },
+        containerColor = stitchBg,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
@@ -100,16 +116,26 @@ fun ChangePasswordScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(20.dp))
+            
             // Icon
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = EmeraldGreen
-            )
+             Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(stitchLime, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = stitchDarkGreen
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Title and description
             Text(
@@ -120,8 +146,11 @@ fun ChangePasswordScreen(
                 },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = stitchTextPrimary
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = if (uiState.hasPasswordProvider) {
@@ -130,156 +159,95 @@ fun ChangePasswordScreen(
                     stringResource(R.string.change_password_desc_set)
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = stitchTextSecondary,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // ===== Form Section =====
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(32.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = bgCard
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     // Current Password (chỉ hiển thị nếu user đã có password)
                     if (uiState.hasPasswordProvider) {
-                        OutlinedTextField(
+                        StitchOutlinedTextField(
                             value = uiState.currentPassword,
                             onValueChange = viewModel::onCurrentPasswordChange,
-                            label = { Text(stringResource(R.string.change_password_current)) },
-                            singleLine = true,
+                            label = stringResource(R.string.change_password_current),
+                            isVisible = currentPasswordVisible,
+                            onVisibilityChange = { currentPasswordVisible = !currentPasswordVisible },
                             enabled = !uiState.isLoading,
-                            visualTransformation = if (currentPasswordVisible) {
-                                VisualTransformation.None
-                            } else {
-                                PasswordVisualTransformation()
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
-                                    Icon(
-                                        imageVector = if (currentPasswordVisible) {
-                                            Icons.Default.VisibilityOff
-                                        } else {
-                                            Icons.Default.Visibility
-                                        },
-                                        contentDescription = if (currentPasswordVisible) "Hide" else "Show"
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = EmeraldGreen,
-                                focusedLabelColor = EmeraldGreen
-                            )
+                            stitchDarkGreen = stitchDarkGreen,
+                            stitchTextPrimary = stitchTextPrimary
                         )
                     }
 
                     // New Password
-                    OutlinedTextField(
+                    StitchOutlinedTextField(
                         value = uiState.newPassword,
                         onValueChange = viewModel::onNewPasswordChange,
-                        label = { Text(stringResource(R.string.change_password_new)) },
-                        singleLine = true,
+                        label = stringResource(R.string.change_password_new),
+                        isVisible = newPasswordVisible,
+                        onVisibilityChange = { newPasswordVisible = !newPasswordVisible },
                         enabled = !uiState.isLoading,
-                        visualTransformation = if (newPasswordVisible) {
-                            VisualTransformation.None
-                        } else {
-                            PasswordVisualTransformation()
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                                Icon(
-                                    imageVector = if (newPasswordVisible) {
-                                        Icons.Default.VisibilityOff
-                                    } else {
-                                        Icons.Default.Visibility
-                                    },
-                                    contentDescription = if (newPasswordVisible) "Hide" else "Show"
-                                )
-                            }
-                        },
-                        supportingText = {
-                            Text(stringResource(R.string.change_password_hint_min))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = EmeraldGreen,
-                            focusedLabelColor = EmeraldGreen
-                        )
+                        supportingText = stringResource(R.string.change_password_hint_min),
+                        stitchDarkGreen = stitchDarkGreen,
+                        stitchTextPrimary = stitchTextPrimary
                     )
 
                     // Confirm Password
-                    OutlinedTextField(
+                    StitchOutlinedTextField(
                         value = uiState.confirmPassword,
                         onValueChange = viewModel::onConfirmPasswordChange,
-                        label = { Text(stringResource(R.string.change_password_confirm)) },
-                        singleLine = true,
+                        label = stringResource(R.string.change_password_confirm),
+                        isVisible = confirmPasswordVisible,
+                        onVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible },
                         enabled = !uiState.isLoading,
-                        isError = uiState.confirmPassword.isNotEmpty() && 
-                                  uiState.newPassword != uiState.confirmPassword,
-                        visualTransformation = if (confirmPasswordVisible) {
-                            VisualTransformation.None
-                        } else {
-                            PasswordVisualTransformation()
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                Icon(
-                                    imageVector = if (confirmPasswordVisible) {
-                                        Icons.Default.VisibilityOff
-                                    } else {
-                                        Icons.Default.Visibility
-                                    },
-                                    contentDescription = if (confirmPasswordVisible) "Hide" else "Show"
-                                )
-                            }
-                        },
-                        supportingText = {
-                            if (uiState.confirmPassword.isNotEmpty() && 
-                                uiState.newPassword != uiState.confirmPassword) {
-                                Text(
-                                    stringResource(R.string.change_password_error_mismatch),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = EmeraldGreen,
-                            focusedLabelColor = EmeraldGreen
-                        )
+                        isError = uiState.confirmPassword.isNotEmpty() && uiState.newPassword != uiState.confirmPassword,
+                        errorMessage = if (uiState.confirmPassword.isNotEmpty() && uiState.newPassword != uiState.confirmPassword) {
+                             stringResource(R.string.change_password_error_mismatch)
+                        } else null,
+                        stitchDarkGreen = stitchDarkGreen,
+                        stitchTextPrimary = stitchTextPrimary
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // ===== Save Button =====
             Button(
                 onClick = viewModel::savePassword,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(56.dp),
                 enabled = !uiState.isLoading && 
                           uiState.newPassword.length >= 6 && 
                           uiState.newPassword == uiState.confirmPassword &&
                           (uiState.hasPasswordProvider.not() || uiState.currentPassword.isNotEmpty()),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldGreen
+                    containerColor = stitchLime,
+                    contentColor = stitchDarkGreen,
+                    disabledContainerColor = Color.Gray.copy(alpha = 0.2f),
+                    disabledContentColor = Color.Gray
                 ),
-                shape = MaterialTheme.shapes.medium
+                shape = RoundedCornerShape(28.dp)
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.White,
+                        color = stitchDarkGreen,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -288,10 +256,63 @@ fun ChangePasswordScreen(
                     Text(
                         text = if (uiState.hasPasswordProvider) stringResource(R.string.change_password_title) else stringResource(R.string.change_password_set_password),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun StitchOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    isVisible: Boolean,
+    onVisibilityChange: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    supportingText: String? = null,
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    stitchDarkGreen: Color,
+    stitchTextPrimary: Color
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        singleLine = true,
+        enabled = enabled,
+        isError = isError,
+        visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            IconButton(onClick = onVisibilityChange) {
+                Icon(
+                    imageVector = if (isVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = if (isVisible) "Hide" else "Show",
+                    tint = stitchDarkGreen
+                )
+            }
+        },
+        supportingText = {
+            if (errorMessage != null) {
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+            } else if (supportingText != null) {
+                Text(supportingText)
+            }
+        },
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = stitchDarkGreen,
+            focusedLabelColor = stitchDarkGreen,
+            cursorColor = stitchDarkGreen,
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent,
+            focusedTextColor = stitchTextPrimary,
+            unfocusedTextColor = stitchTextPrimary
+        )
+    )
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Colors Adapting to Dark Mode -->
+    <color name="primary_green">#16C77D</color>
+    <color name="primary_green_dark">#0EA164</color>
+    <color name="accent_red">#FF6B6B</color>
+    <color name="bg_light">#0F1C28</color>
+    <color name="bg_dark">#000000</color>
+    <color name="bg_card">#1E2A32</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0BEC5</color>
+    <color name="border_light">#2C353B</color>
+    <color name="chip_bg">#1C382E</color>
+    <color name="success_green">#1ABC64</color>
+    <color name="warning_orange">#F2C94C</color>
+    <color name="muted_gray">#6C757D</color>
+
+    <!-- Stitch Design Colors - Dark Mode -->
+    <!-- Card Background: Kept dark green, slightly lighter for surface distinction -->
+    <color name="stitch_dark_green">#153F39</color>
+    
+    <!-- Accent: Lime pops well on dark -->
+    <color name="stitch_lime">#D0EE75</color>
+    
+    <!-- Screen Background: Dark Grey/Black -->
+    <color name="stitch_bg">#121212</color>
+    
+    <!-- Find Box Background: Darker teal/slate -->
+    <color name="stitch_find_bg">#1F2F2D</color>
+    
+    <!-- Primary Text: Light (White/Off-white) for headings on background -->
+    <color name="stitch_text_primary">#F2F4F1</color>
+    
+    <!-- Secondary Text: Light Grey -->
+    <color name="stitch_text_secondary">#9AA8A6</color>
+</resources>

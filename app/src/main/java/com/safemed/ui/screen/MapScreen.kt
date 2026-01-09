@@ -7,20 +7,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,50 +21,30 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.location.LocationServices
+import com.safemed.R
+import com.safemed.data.model.Pharmacy
+import com.safemed.data.model.PharmacyDistance
+import com.safemed.ui.screen.MapViewModel
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -81,9 +53,6 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-import com.safemed.R
-import com.safemed.data.model.Pharmacy
-import com.safemed.data.model.PharmacyDistance
 
 // Default location (Ho Chi Minh City, Vietnam)
 private val DEFAULT_LOCATION = GeoPoint(10.7769, 106.7009)
@@ -99,6 +68,12 @@ fun MapScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     
+    // Stitch Colors
+    val stitchBg = colorResource(id = R.color.stitch_bg)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchTextPrimary = colorResource(id = R.color.stitch_text_primary)
+    
     // Lifecycle handling for MapView
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
@@ -107,7 +82,7 @@ fun MapScreen(
         Configuration.getInstance().userAgentValue = context.packageName
     }
     
-    // Permission state
+    // Permission Handle
     var hasLocationPermission by remember {
         mutableStateOf(checkLocationPermission(context))
     }
@@ -119,7 +94,6 @@ fun MapScreen(
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
     
-    // Request permissions
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
             permissionLauncher.launch(
@@ -131,7 +105,6 @@ fun MapScreen(
         }
     }
     
-    // Get user location
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
             try {
@@ -139,13 +112,11 @@ fun MapScreen(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let { viewModel.updateUserLocation(it) }
                 }
-            } catch (e: SecurityException) {
-                // permission revoked
-            }
+            } catch (e: SecurityException) { /* Handle error */ }
         }
     }
 
-    // MapView instance
+    // MapView
     val mapView = remember {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
@@ -155,14 +126,12 @@ fun MapScreen(
         }
     }
     
-    // Location Overlay
     val locationOverlay = remember {
         MyLocationNewOverlay(GpsMyLocationProvider(context), mapView).apply {
             enableMyLocation()
         }
     }
 
-    // Manage Lifecycle
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -172,12 +141,10 @@ fun MapScreen(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     
-    // Camera updates for User Location
+    // Camera Updates
     LaunchedEffect(uiState.userLocation) {
         uiState.userLocation?.let { location ->
             mapView.controller.animateTo(location)
@@ -185,7 +152,6 @@ fun MapScreen(
         }
     }
     
-    // Camera updates for Selected Pharmacy
     LaunchedEffect(uiState.selectedPharmacy) {
         uiState.selectedPharmacy?.let { pharmacy ->
             val point = GeoPoint(pharmacy.latitude, pharmacy.longitude)
@@ -194,10 +160,10 @@ fun MapScreen(
         }
     }
 
-    // Bottom Sheet
     val bottomSheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.PartiallyExpanded,
-        skipHiddenState = true
+        skipHiddenState = true,
+        confirmValueChange = { true }
     )
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = bottomSheetState
@@ -205,30 +171,37 @@ fun MapScreen(
     
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 200.dp,
+        sheetPeekHeight = 220.dp,
+        sheetContainerColor = stitchBg,
         sheetContent = {
             BottomSheetContent(
                 uiState = uiState,
                 onPharmacySelected = viewModel::onPharmacySelected,
                 onClearSelection = viewModel::clearSelection,
-                onNavigateClick = { pharmacy ->
-                    openGoogleMapsNavigation(context, pharmacy)
-                },
-                onCallClick = { pharmacy ->
-                    callPharmacy(context, pharmacy)
-                }
+                onNavigateClick = { openGoogleMapsNavigation(context, it) },
+                onCallClick = { callPharmacy(context, it) }
             )
         },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.map_title_osm)) },
+                title = { 
+                    Text(
+                        stringResource(R.string.map_title_osm),
+                        color = stitchTextPrimary,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = stringResource(R.string.back),
+                            tint = stitchTextPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = stitchBg
                 )
             )
         },
@@ -244,10 +217,7 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize(),
                 update = { view ->
                     view.overlays.clear()
-                    
-                    if (hasLocationPermission) {
-                        view.overlays.add(locationOverlay)
-                    }
+                    if (hasLocationPermission) view.overlays.add(locationOverlay)
                     
                     uiState.pharmacies.forEach { pharmacyDistance ->
                         val pharmacy = pharmacyDistance.pharmacy
@@ -271,14 +241,14 @@ fun MapScreen(
                         polyline.outlinePaint.strokeWidth = 12f
                         view.overlays.add(polyline)
                     }
-                    
                     view.invalidate()
                 }
             )
             
             if (uiState.isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
+                    color = stitchLime
                 )
             }
         }
@@ -293,28 +263,20 @@ private fun BottomSheetContent(
     onNavigateClick: (Pharmacy) -> Unit,
     onCallClick: (Pharmacy) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        if (uiState.selectedPharmacy != null) {
-            // Detail State - Show selected pharmacy details
-            PharmacyDetailContent(
-                pharmacy = uiState.selectedPharmacy,
-                routeInfo = uiState.routeInfo,
-                isLoadingRoute = uiState.isLoadingRoute,
-                onBackClick = onClearSelection,
-                onNavigateClick = { onNavigateClick(uiState.selectedPharmacy) },
-                onCallClick = { onCallClick(uiState.selectedPharmacy) }
-            )
-        } else {
-            // List State - Show pharmacy list
-            PharmacyListContent(
-                pharmacies = uiState.pharmacies,
-                onPharmacyClick = onPharmacySelected
-            )
-        }
+    if (uiState.selectedPharmacy != null) {
+        PharmacyDetailContent(
+            pharmacy = uiState.selectedPharmacy,
+            routeInfo = uiState.routeInfo,
+            isLoadingRoute = uiState.isLoadingRoute,
+            onBackClick = onClearSelection,
+            onNavigateClick = { onNavigateClick(uiState.selectedPharmacy) },
+            onCallClick = { onCallClick(uiState.selectedPharmacy) }
+        )
+    } else {
+        PharmacyListContent(
+            pharmacies = uiState.pharmacies,
+            onPharmacyClick = onPharmacySelected
+        )
     }
 }
 
@@ -323,62 +285,64 @@ private fun PharmacyListContent(
     pharmacies: List<PharmacyDistance>,
     onPharmacyClick: (Pharmacy) -> Unit
 ) {
-    Column {
-        Row(
+    val stitchTextPrimary = colorResource(id = R.color.stitch_text_primary)
+    val stitchTextSecondary = colorResource(id = R.color.stitch_text_secondary)
+
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        // Handle bar styling
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
+                .padding(top = 10.dp, bottom = 20.dp)
+                .align(Alignment.CenterHorizontally)
+                .width(40.dp)
+                .height(4.dp)
+                .background(stitchTextSecondary.copy(alpha = 0.4f), CircleShape)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(R.string.map_nearby_pharmacies),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = stitchTextPrimary
             )
             Text(
-                text = stringResource(R.string.map_results_count, pharmacies.size),
+                text = "${pharmacies.size} results",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = stitchTextSecondary
             )
         }
         
-        HorizontalDivider()
-        
         if (pharmacies.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.LocalPharmacy,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = stitchTextSecondary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = stringResource(R.string.map_no_pharmacy),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = stitchTextSecondary
                     )
                 }
             }
         } else {
             LazyColumn(
-                modifier = Modifier.height(300.dp)
+                modifier = Modifier.height(400.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(pharmacies) { pharmacyDistance ->
-                    PharmacyListItem(
-                        pharmacyDistance = pharmacyDistance,
-                        onClick = { onPharmacyClick(pharmacyDistance.pharmacy) }
-                    )
+                items(pharmacies) { pharmacy ->
+                    PharmacyListItem(pharmacyDistance = pharmacy, onClick = { onPharmacyClick(pharmacy.pharmacy) })
                 }
+                item { Spacer(modifier = Modifier.height(20.dp)) }
             }
         }
     }
@@ -389,84 +353,78 @@ private fun PharmacyListItem(
     pharmacyDistance: PharmacyDistance,
     onClick: () -> Unit
 ) {
+    val darkGreen = colorResource(id = R.color.stitch_dark_green)
+    val lime = colorResource(id = R.color.stitch_lime)
+    
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        shape = RoundedCornerShape(12.dp)
+        onClick = onClick,
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = darkGreen),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Pharmacy icon
+            // Icon
             Box(
                 modifier = Modifier
-                    .size(48.dp),
+                    .size(48.dp)
+                    .background(lime, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.LocalPharmacy,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
+                    tint = darkGreen,
+                    modifier = Modifier.size(24.dp)
                 )
             }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
-            // Pharmacy info
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            // Info
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = pharmacyDistance.pharmacy.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold, // Stitch style bold
+                    color = Color.White,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = Color.White.copy(alpha = 0.6f), // Secondary text
+                        modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = pharmacyDistance.pharmacy.address,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.6f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
-            // Distance badge
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                shape = RoundedCornerShape(8.dp)
+            // Distance Pill
+            Surface(
+                color = Color.White.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = pharmacyDistance.formatDistance(),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    style = MaterialTheme.typography.labelSmall,
+                    color = lime,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -482,245 +440,175 @@ private fun PharmacyDetailContent(
     onNavigateClick: () -> Unit,
     onCallClick: () -> Unit
 ) {
-    Column {
-        // Header with close button
-        Row(
+    val darkGreen = colorResource(id = R.color.stitch_dark_green)
+    val lime = colorResource(id = R.color.stitch_lime)
+    val textColor = colorResource(id = R.color.stitch_text_primary)
+    val secondaryText = colorResource(id = R.color.stitch_text_secondary)
+
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(top = 10.dp, bottom = 20.dp)
+                .align(Alignment.CenterHorizontally)
+                .width(40.dp)
+                .height(4.dp)
+                .background(secondaryText.copy(alpha = 0.4f), CircleShape)
+        )
+        
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(R.string.map_pharmacy_detail),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = textColor
             )
-            IconButton(onClick = onBackClick) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.background(Color.White.copy(alpha = 0.1f), CircleShape)
+            ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.btn_close)
+                    contentDescription = stringResource(R.string.btn_close),
+                    tint = textColor
                 )
             }
         }
         
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Pharmacy info card
+        // Detail Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = darkGreen)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(24.dp)) {
                 // Name
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocalPharmacy,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(lime, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocalPharmacy,
+                            contentDescription = null,
+                            tint = darkGreen,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = pharmacy.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Info Items
+                InfoRow(icon = Icons.Default.LocationOn, text = pharmacy.address, color = secondaryText)
+                
+                if (pharmacy.phone.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    InfoRow(icon = Icons.Default.Phone, text = pharmacy.phone, color = secondaryText)
                 }
                 
                 Spacer(modifier = Modifier.height(12.dp))
+                // Open status
+                val statusColor = if (pharmacy.isOpen) Color(0xFFDEFF7D) else Color(0xFFFF7D7D) // Lime vs Red
+                val statusText = if (pharmacy.isOpen) stringResource(R.string.map_open_now) else stringResource(R.string.map_closed)
                 
-                // Address
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = pharmacy.address,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AccessTime, null, tint = statusColor, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(text = statusText, color = statusColor, fontWeight = FontWeight.Bold)
                 }
-                
-                // Route info
+
                 if (isLoadingRoute) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.map_calculating_route),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = lime)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(text = stringResource(R.string.map_calculating_route), color = secondaryText)
                     }
                 } else if (routeInfo.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = routeInfo,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                
-                // Phone
-                if (pharmacy.phone.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = pharmacy.phone,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                
-                // Open status
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = if (pharmacy.isOpen) Color(0xFF4CAF50) else Color(0xFFF44336),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (pharmacy.isOpen) stringResource(R.string.map_open_now) else stringResource(R.string.map_closed),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = if (pharmacy.isOpen) Color(0xFF4CAF50) else Color(0xFFF44336)
-                    )
+                    InfoRow(icon = Icons.AutoMirrored.Filled.DirectionsWalk, text = routeInfo, color = lime)
                 }
             }
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
-        // Action buttons
+        // Actions
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Call button
             if (pharmacy.phone.isNotEmpty()) {
                 Button(
                     onClick = onCallClick,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        containerColor = Color.White.copy(alpha = 0.1f), // Glassy look
+                        contentColor = Color.White
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Phone,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Phone, null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.map_call))
                 }
             }
             
-            // Navigate button
             Button(
                 onClick = onNavigateClick,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = lime,
+                    contentColor = darkGreen
                 )
             ) {
-                Icon(
-                    imageVector = Icons.Default.Navigation,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
+                Icon(Icons.Default.Navigation, null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.map_navigate))
+                Text(stringResource(R.string.map_navigate), fontWeight = FontWeight.Bold)
             }
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(30.dp))
     }
 }
 
-/**
- * Check if location permissions are granted
- */
-private fun checkLocationPermission(context: Context): Boolean {
-    return ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+@Composable
+private fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, color: Color) {
+    Row(verticalAlignment = Alignment.Top) {
+        Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = color)
+    }
 }
 
-/**
- * Open Google Maps app for navigation to pharmacy
- */
+private fun checkLocationPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+}
+
 private fun openGoogleMapsNavigation(context: Context, pharmacy: Pharmacy) {
     val uri = Uri.parse("google.navigation:q=${pharmacy.latitude},${pharmacy.longitude}")
-    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-        setPackage("com.google.android.apps.maps")
-    }
-    
-    // Check if Google Maps is installed
-    if (intent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(intent)
-    } else {
-        // Fallback to web browser
-        val webUri = Uri.parse(
-            "https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}"
-        )
-        context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
-    }
+    val intent = Intent(Intent.ACTION_VIEW, uri).apply { setPackage("com.google.android.apps.maps") }
+    if (intent.resolveActivity(context.packageManager) != null) context.startActivity(intent)
+    else context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}")))
 }
 
-/**
- * Call pharmacy phone number
- */
 private fun callPharmacy(context: Context, pharmacy: Pharmacy) {
     if (pharmacy.phone.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_DIAL).apply {
-            data = Uri.parse("tel:${pharmacy.phone}")
-        }
-        context.startActivity(intent)
+        context.startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${pharmacy.phone}") })
     }
 }

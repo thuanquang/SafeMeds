@@ -31,6 +31,9 @@ sealed class AppDestination(val route: String) {
     // Chat screen
     object Chat : AppDestination("chat")
 
+    // Adherence screen
+    object Adherence : AppDestination("adherence")
+
     // History screen
     object History : AppDestination("history")
     

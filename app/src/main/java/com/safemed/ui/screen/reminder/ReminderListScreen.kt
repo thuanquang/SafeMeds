@@ -1,10 +1,13 @@
 package com.safemed.ui.screen.reminder
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -17,15 +20,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.safemed.R
 import com.safemed.data.model.MedicationReminder
 import com.safemed.data.model.TimeSlot
-import com.safemed.ui.theme.EmeraldGreen
-import com.safemed.ui.theme.EmeraldGreenDark
 
 /**
  * Màn hình danh sách nhắc nhở uống thuốc
@@ -41,6 +45,11 @@ fun ReminderListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf<String?>(null) }
+    
+    // Stitch Colors
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    val stitchBg = colorResource(id = R.color.stitch_bg)
 
     // Show error message
     LaunchedEffect(uiState.errorMessage) {
@@ -59,14 +68,21 @@ fun ReminderListScreen(
     }
 
     Scaffold(
+        containerColor = stitchBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddReminder,
-                containerColor = EmeraldGreen,
-                contentColor = Color.White
+                containerColor = stitchLime,
+                contentColor = stitchDarkGreen,
+                shape = CircleShape,
+                modifier = Modifier.size(72.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(com.safemed.R.string.reminder_add))
+                Icon(
+                    imageVector = Icons.Default.Add, 
+                    contentDescription = stringResource(R.string.reminder_add),
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     ) { padding ->
@@ -84,7 +100,7 @@ fun ReminderListScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = EmeraldGreen)
+                    CircularProgressIndicator(color = stitchDarkGreen)
                 }
             } else if (uiState.reminders.isEmpty()) {
                 EmptyReminderState(onAddClick = onNavigateToAddReminder)
@@ -141,52 +157,33 @@ fun ReminderListScreen(
  */
 @Composable
 fun ReminderListHeader(onNavigateBack: () -> Unit) {
-    val isDarkMode = isSystemInDarkTheme()
-    
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = if (isDarkMode) {
-                        listOf(
-                            EmeraldGreenDark.copy(alpha = 0.9f),
-                            EmeraldGreenDark.copy(alpha = 0.7f)
-                        )
-                    } else {
-                        listOf(EmeraldGreen, EmeraldGreenDark)
-                    }
-                )
-            )
             .padding(16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
             IconButton(onClick = onNavigateBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = stringResource(com.safemed.R.string.reminder_back),
-                    tint = Color.White
+                    contentDescription = stringResource(R.string.reminder_back),
+                    tint = colorResource(id = R.color.stitch_text_primary),
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Column {
-                Text(
-                    text = stringResource(com.safemed.R.string.reminder_header_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = stringResource(com.safemed.R.string.reminder_header_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.85f)
-                )
-            }
+            Text(
+                text = stringResource(R.string.reminder_header_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.stitch_text_primary)
+            )
         }
     }
 }
@@ -229,7 +226,7 @@ private fun EmptyReminderState(onAddClick: () -> Unit) {
 
         Button(
             onClick = onAddClick,
-            colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.stitch_dark_green))
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
@@ -249,23 +246,20 @@ private fun ReminderCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    val darkText = colorResource(id = R.color.stitch_text_primary)
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (reminder.isActive) {
-                MaterialTheme.colorScheme.surface
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            }
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(24.dp)
         ) {
             // Header row with title and switch
             Row(
@@ -274,49 +268,43 @@ private fun ReminderCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    val defaultTitle = stringResource(com.safemed.R.string.reminder_default_title)
+                    val defaultTitle = stringResource(R.string.reminder_default_title)
                     Text(
                         text = if (reminder.isDetailedReminder && !reminder.medicineName.isNullOrBlank()) {
                             reminder.medicineName!!
                         } else {
                             defaultTitle
                         },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = if (reminder.isActive) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        }
+                        color = darkText
                     )
-
-                    if (reminder.isDetailedReminder && !reminder.dosage.isNullOrBlank()) {
-                        Text(
-                            text = reminder.dosage!!,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
 
+                // Custom Switch Style: Dark Track, Green Thumb
                 Switch(
                     checked = reminder.isActive,
                     onCheckedChange = { onToggleActive() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = EmeraldGreen
-                    )
+                        checkedThumbColor = stitchLime,
+                        checkedTrackColor = stitchDarkGreen,
+                        uncheckedThumbColor = Color.White,
+                        uncheckedTrackColor = Color(0xFFE0E0E0),
+                        checkedBorderColor = Color.Transparent,
+                        uncheckedBorderColor = Color.Transparent
+                    ),
+                    thumbContent = null
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Time slots
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween // Distribute evenly
             ) {
                 TimeSlot.entries.forEach { slot ->
                     val time = reminder.getTimeForSlot(slot)
@@ -328,7 +316,7 @@ private fun ReminderCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Repeat info and actions
             Row(
@@ -340,32 +328,46 @@ private fun ReminderCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Repeat,
+                        imageVector = Icons.Default.Loop, // Loop/Repeat icon
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.Gray
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = reminder.getRepeatDisplayText(context),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = stringResource(id = R.string.reminder_repeat_daily_label),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
                     )
                 }
 
-                Row {
+                Row(
+                   verticalAlignment = Alignment.CenterVertically,
+                   horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     IconButton(onClick = onEdit) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(com.safemed.R.string.reminder_action_edit),
-                            tint = MaterialTheme.colorScheme.primary
+                            contentDescription = stringResource(R.string.reminder_action_edit),
+                            tint = Color.Gray
                         )
                     }
-                    IconButton(onClick = onDelete) {
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color(0xFFFFF0F0), CircleShape)
+                            .clip(CircleShape)
+                            .clickable { onDelete() },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(com.safemed.R.string.reminder_action_delete),
-                            tint = Color.Red.copy(alpha = 0.7f)
+                            contentDescription = stringResource(R.string.reminder_action_delete),
+                            tint = Color(0xFFFF8A80), // Light red/pinkish
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -383,46 +385,40 @@ private fun TimeSlotChip(
     time: String?,
     isActive: Boolean
 ) {
-    val backgroundColor = when {
-        time == null -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        isActive -> when (slot) {
-            TimeSlot.MORNING -> Color(0xFFFFF3E0)
-            TimeSlot.NOON -> Color(0xFFFFFDE7)
-            TimeSlot.AFTERNOON -> Color(0xFFE3F2FD)
-            TimeSlot.EVENING -> Color(0xFFEDE7F6)
-        }
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-    }
+    val stitchLime = colorResource(id = R.color.stitch_lime)
+    val stitchDarkGreen = colorResource(id = R.color.stitch_dark_green)
+    
+    val backgroundColor = if (isActive) stitchLime else Color(0xFFF8F9FA) // Light Grey
+    val contentColor = if (isActive) stitchDarkGreen else Color.LightGray.copy(alpha = 0.5f)
 
-    val textColor = when {
-        time == null -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-        isActive -> MaterialTheme.colorScheme.onSurface
-        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-    }
-
-    val emoji = when (slot) {
-        TimeSlot.MORNING -> "🌅"
-        TimeSlot.NOON -> "☀️"
-        TimeSlot.AFTERNOON -> "🌤️"
-        TimeSlot.EVENING -> "🌙"
+    val icon = when (slot) {
+        TimeSlot.MORNING -> Icons.Default.WbSunny
+        TimeSlot.NOON -> Icons.Default.LightMode
+        TimeSlot.AFTERNOON -> Icons.Default.WbTwilight
+        TimeSlot.EVENING -> Icons.Default.NightsStay
     }
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+            .size(72.dp) // Fixed square size
+            .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = emoji,
-            style = MaterialTheme.typography.bodySmall
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(20.dp)
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = time ?: "--:--",
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = if (time != null) FontWeight.Medium else FontWeight.Normal,
-            color = textColor
+            fontWeight = FontWeight.Bold,
+            color = contentColor
         )
     }
 }
