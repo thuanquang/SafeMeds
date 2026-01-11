@@ -321,17 +321,22 @@ class ReminderRepository @Inject constructor(
             return@callbackFlow
         }
 
+        // Use simple query without ordering to avoid composite index requirement issues
         val listener = db.collection(REMINDER_LOGS_COLLECTION)
             .whereEqualTo("user_id", userId)
-            .orderBy("action_time", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
+            // Removed orderBy and limit from Firestore query to prevent "FAILED_PRECONDITION: The query requires an index" error
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.e(TAG, "Listen failed for logs.", e)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
+                
+                // Do sorting and limiting in memory
                 val logs = snapshot?.toObjects(ReminderLog::class.java) ?: emptyList()
-                trySend(logs)
+                val sortedLogs = logs.sortedByDescending { it.actionTime }.take(limit)
+                
+                trySend(sortedLogs)
             }
         awaitClose { listener.remove() }
     }
