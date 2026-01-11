@@ -10,6 +10,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.safemed.data.model.User
 import com.safemed.util.ImageUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,6 +51,35 @@ class ProfileRepository @Inject constructor(
             Log.e(TAG, "Failed to get user profile", e)
             Result.failure(e)
         }
+    }
+
+    /**
+     * Lấy thông tin user real-time từ Firestore
+     */
+    fun getUserProfileFlow(): Flow<User?> = callbackFlow {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            trySend(null)
+            close()
+            return@callbackFlow
+        }
+
+        val listenerRegistration = db.collection(USERS_COLLECTION).document(userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(TAG, "Listen failed", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val user = snapshot.toObject(User::class.java)
+                    trySend(user)
+                } else {
+                    trySend(null)
+                }
+            }
+        
+        awaitClose { listenerRegistration.remove() }
     }
 
     /**

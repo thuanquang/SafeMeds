@@ -46,28 +46,36 @@ class ReminderActionReceiver : BroadcastReceiver() {
         val timeSlot = intent.getStringExtra(NotificationHelper.EXTRA_TIME_SLOT) ?: return
         val notificationId = intent.getIntExtra(NotificationHelper.EXTRA_NOTIFICATION_ID, -1)
 
-        when (intent.action) {
-            NotificationHelper.ACTION_MARK_TAKEN -> {
-                handleMarkTaken(context, reminderId, timeSlot, notificationId)
-            }
-            NotificationHelper.ACTION_SNOOZE -> {
-                val snoozeDuration = intent.getIntExtra(NotificationHelper.EXTRA_SNOOZE_DURATION, 10)
-                val title = intent.getStringExtra(NotificationHelper.EXTRA_TITLE) ?: "💊 Nhắc uống thuốc"
-                val body = intent.getStringExtra(NotificationHelper.EXTRA_BODY) ?: "Đã đến giờ uống thuốc"
-                val medicineName = intent.getStringExtra(NotificationHelper.EXTRA_MEDICINE_NAME)
-                val dosage = intent.getStringExtra(NotificationHelper.EXTRA_DOSAGE)
-                
-                handleSnooze(
-                    context = context,
-                    reminderId = reminderId,
-                    timeSlot = timeSlot,
-                    notificationId = notificationId,
-                    snoozeDuration = snoozeDuration,
-                    title = title,
-                    body = body,
-                    medicineName = medicineName,
-                    dosage = dosage
-                )
+        val pendingResult = goAsync()
+
+        scope.launch {
+            try {
+                when (intent.action) {
+                    NotificationHelper.ACTION_MARK_TAKEN -> {
+                        handleMarkTaken(context, reminderId, timeSlot, notificationId)
+                    }
+                    NotificationHelper.ACTION_SNOOZE -> {
+                        val snoozeDuration = intent.getIntExtra(NotificationHelper.EXTRA_SNOOZE_DURATION, 10)
+                        val title = intent.getStringExtra(NotificationHelper.EXTRA_TITLE) ?: "💊 Nhắc uống thuốc"
+                        val body = intent.getStringExtra(NotificationHelper.EXTRA_BODY) ?: "Đã đến giờ uống thuốc"
+                        val medicineName = intent.getStringExtra(NotificationHelper.EXTRA_MEDICINE_NAME)
+                        val dosage = intent.getStringExtra(NotificationHelper.EXTRA_DOSAGE)
+                        
+                        handleSnooze(
+                            context = context,
+                            reminderId = reminderId,
+                            timeSlot = timeSlot,
+                            notificationId = notificationId,
+                            snoozeDuration = snoozeDuration,
+                            title = title,
+                            body = body,
+                            medicineName = medicineName,
+                            dosage = dosage
+                        )
+                    }
+                }
+            } finally {
+                pendingResult.finish()
             }
         }
     }
@@ -75,7 +83,7 @@ class ReminderActionReceiver : BroadcastReceiver() {
     /**
      * Xử lý khi user nhấn "Đã uống"
      */
-    private fun handleMarkTaken(
+    private suspend fun handleMarkTaken(
         context: Context,
         reminderId: String,
         timeSlot: String,
@@ -89,16 +97,14 @@ class ReminderActionReceiver : BroadcastReceiver() {
         }
 
         // Log action to Firestore
-        scope.launch {
-            reminderRepository.logReminderAction(
-                reminderId = reminderId,
-                timeSlot = timeSlot,
-                action = "taken"
-            )
-        }
+        reminderRepository.logReminderAction(
+            reminderId = reminderId,
+            timeSlot = timeSlot,
+            action = "taken"
+        )
 
         // Show confirmation toast
-        CoroutineScope(Dispatchers.Main).launch {
+        kotlinx.coroutines.withContext(Dispatchers.Main) {
             Toast.makeText(context, context.getString(R.string.notification_action_taken_toast), Toast.LENGTH_SHORT).show()
         }
     }
@@ -106,7 +112,7 @@ class ReminderActionReceiver : BroadcastReceiver() {
     /**
      * Xử lý khi user nhấn "Nhắc lại sau"
      */
-    private fun handleSnooze(
+    private suspend fun handleSnooze(
         context: Context,
         reminderId: String,
         timeSlot: String,
@@ -142,17 +148,15 @@ class ReminderActionReceiver : BroadcastReceiver() {
         )
 
         // Log snooze action
-        scope.launch {
-            reminderRepository.logReminderAction(
-                reminderId = reminderId,
-                timeSlot = timeSlot,
-                action = "snoozed",
-                snoozeCount = 1
-            )
-        }
+        reminderRepository.logReminderAction(
+            reminderId = reminderId,
+            timeSlot = timeSlot,
+            action = "snoozed",
+            snoozeCount = 1
+        )
 
         // Show confirmation toast
-        CoroutineScope(Dispatchers.Main).launch {
+        kotlinx.coroutines.withContext(Dispatchers.Main) {
             Toast.makeText(context, context.getString(R.string.notification_action_snooze_toast, snoozeDuration), Toast.LENGTH_SHORT).show()
         }
     }
