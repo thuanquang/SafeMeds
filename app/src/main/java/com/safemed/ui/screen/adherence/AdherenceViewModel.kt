@@ -110,25 +110,56 @@ class AdherenceViewModel @Inject constructor(
         val dayFormatter = SimpleDateFormat("EEE", Locale.getDefault())
 
         // Helper to calculate expected doses up to current time
-        fun countExpectedForDate(reminders: List<MedicationReminder>, date: Calendar, isToday: Boolean): Int {
+        fun countExpectedForDate(reminders: List<MedicationReminder>, date: Calendar, isToday: Boolean, dailyLogs: List<ReminderLog>): Int {
             val dayOfWeek = date.get(Calendar.DAY_OF_WEEK) - 1
             val now = Calendar.getInstance()
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeValue = currentHour * 60 + currentMinute
+            
+            // Normalize target date to start of day for creation check
+            val startOfTargetDay = date.clone() as Calendar
+            startOfTargetDay.set(Calendar.HOUR_OF_DAY, 0)
+            startOfTargetDay.set(Calendar.MINUTE, 0)
+            startOfTargetDay.set(Calendar.SECOND, 0)
+            startOfTargetDay.set(Calendar.MILLISECOND, 0)
 
             var count = 0
             
             for (reminder in reminders) {
                 // Skip if not active or not scheduled for this day
                 if (!reminder.isActive) continue
+                
+                // Check if reminder was created after this target day
+                if (reminder.createdAt != null) {
+                     val createdCal = Calendar.getInstance()
+                     createdCal.time = reminder.createdAt!!.toDate()
+                     createdCal.set(Calendar.HOUR_OF_DAY, 0)
+                     createdCal.set(Calendar.MINUTE, 0)
+                     createdCal.set(Calendar.SECOND, 0)
+                     createdCal.set(Calendar.MILLISECOND, 0)
+                     
+                     if (startOfTargetDay.before(createdCal)) {
+                         continue
+                     }
+                }
+                
                 if (reminder.selectedDays.isNotEmpty() && !reminder.selectedDays.contains(dayOfWeek)) continue
                 
                 // Check each slot
-                fun checkSlot(timeStr: String?) {
+                fun checkSlot(timeStr: String?, slotName: String) {
                     if (timeStr.isNullOrBlank()) return
                     
-                    if (isToday) {
+                    // Check if actually taken (even if early)
+                    val isTaken = dailyLogs.any { 
+                        it.reminderId == reminder.reminderId && 
+                        it.actionTaken == "taken" &&
+                        (it.timeSlot.equals(slotName, ignoreCase = true) || it.timeSlot == timeStr)
+                    }
+                    
+                    if (isTaken) {
+                        count++
+                    } else if (isToday) {
                         try {
                             val parts = timeStr.trim().split(":")
                             if (parts.size >= 2) {
@@ -150,10 +181,10 @@ class AdherenceViewModel @Inject constructor(
                     }
                 }
 
-                checkSlot(reminder.morningTime)
-                checkSlot(reminder.noonTime)
-                checkSlot(reminder.afternoonTime)
-                checkSlot(reminder.eveningTime)
+                checkSlot(reminder.morningTime, "MORNING")
+                checkSlot(reminder.noonTime, "NOON")
+                checkSlot(reminder.afternoonTime, "AFTERNOON")
+                checkSlot(reminder.eveningTime, "EVENING")
             }
             return count
         }
@@ -167,20 +198,26 @@ class AdherenceViewModel @Inject constructor(
             startOfDay.set(Calendar.HOUR_OF_DAY, 0)
             startOfDay.set(Calendar.MINUTE, 0)
             startOfDay.set(Calendar.SECOND, 0)
+            startOfDay.set(Calendar.MILLISECOND, 0)
             
             val endOfDay = targetDate.clone() as Calendar
             endOfDay.set(Calendar.HOUR_OF_DAY, 23)
             endOfDay.set(Calendar.MINUTE, 59)
             endOfDay.set(Calendar.SECOND, 59)
+            endOfDay.set(Calendar.MILLISECOND, 999)
+            
+            // Get logs for this specific day
+            val dailyLogs = logs.filter { log ->
+                 val logTime = log.actionTime?.toDate()?.time ?: 0
+                 logTime >= startOfDay.timeInMillis && logTime <= endOfDay.timeInMillis
+            }
             
             // Calculate Expected considering current time for today
-            val totalExpected = countExpectedForDate(reminders, targetDate, isToday)
+            val totalExpected = countExpectedForDate(reminders, targetDate, isToday, dailyLogs)
+            val activeReminderIds = reminders.map { it.reminderId }.toSet()
 
-            val takenCount = logs.count { log ->
-                val logTime = log.actionTime?.toDate()?.time ?: 0
-                logTime >= startOfDay.timeInMillis && 
-                logTime <= endOfDay.timeInMillis &&
-                log.actionTaken == "taken"
+            val takenCount = dailyLogs.count { log ->
+                log.actionTaken == "taken" && activeReminderIds.contains(log.reminderId)
             }
             
             grandTotalExpected += totalExpected

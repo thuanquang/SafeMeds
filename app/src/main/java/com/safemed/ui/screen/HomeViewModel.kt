@@ -7,9 +7,13 @@ import com.safemed.data.model.ReminderLog
 import com.safemed.data.repository.ProfileRepository
 import com.safemed.data.repository.ReminderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -40,36 +44,52 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadUserName()
-        loadTodaySchedule()
+        observeHomeData()
     }
 
-    private fun loadTodaySchedule() {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeHomeData() {
         viewModelScope.launch {
-            kotlinx.coroutines.flow.combine(
-                reminderRepository.getRemindersFlow(),
-                reminderRepository.getReminderLogsFlow(limit = 50)
-            ) { reminders, logs ->
-                // Filter logs for today
-                val calendar = Calendar.getInstance()
-                val todayYear = calendar.get(Calendar.YEAR)
-                val todayDay = calendar.get(Calendar.DAY_OF_YEAR)
-                
-                val todayLogs = logs.filter { log ->
-                    log.actionTime?.toDate()?.let { date ->
-                        val logCal = Calendar.getInstance()
-                        logCal.time = date
-                        logCal.get(Calendar.YEAR) == todayYear && 
-                        logCal.get(Calendar.DAY_OF_YEAR) == todayDay
-                    } ?: false
+            _uiState.update { it.copy(isLoading = true) }
+            
+            profileRepository.getUserProfileFlow().flatMapLatest { user ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        userName = user?.fullName ?: "",
+                        avatarUrl = user?.avatarUrl
+                    )
                 }
-                
-                // Process Adherence Score
-                val stats = calculateAdherenceScore(reminders, logs) // Using all logs for score
-                val score = stats
 
-                val todayItems = processRemindersForToday(reminders, todayLogs)
-                Triple(todayItems, score, false)
+                if (user == null) {
+                   flowOf(Triple(emptyList<HomeScheduleItem>(), 100, false))
+                } else {
+                    combine(
+                        reminderRepository.getRemindersFlow(),
+                        reminderRepository.getReminderLogsFlow(limit = 100)
+                    ) { reminders, logs ->
+                        // Filter logs for today
+                        val calendar = Calendar.getInstance()
+                        val todayYear = calendar.get(Calendar.YEAR)
+                        val todayDay = calendar.get(Calendar.DAY_OF_YEAR)
+                        
+                        val todayLogs = logs.filter { log ->
+                            log.actionTime?.toDate()?.let { date ->
+                                val logCal = Calendar.getInstance()
+                                logCal.time = date
+                                logCal.get(Calendar.YEAR) == todayYear && 
+                                logCal.get(Calendar.DAY_OF_YEAR) == todayDay
+                            } ?: false
+                        }
+                        
+                        // Process Adherence Score
+                        val stats = calculateAdherenceScore(reminders, logs) // Using all logs for score
+                        val score = stats
+
+                        val todayItems = processRemindersForToday(reminders, todayLogs)
+                        Triple(todayItems, score, false)
+                    }
+                }
             }.collect { (scheduleItems, score, _) ->
                 _uiState.update { 
                     it.copy(
@@ -85,23 +105,55 @@ class HomeViewModel @Inject constructor(
     private fun calculateAdherenceScore(reminders: List<MedicationReminder>, logs: List<ReminderLog>): Int {
         var grandTotalExpected = 0
         var grandTotalTaken = 0
+        val activeReminderIds = reminders.map { it.reminderId }.toSet()
         
         // Helper to check if reminder is active on a specific day of week (0=Sun, ... 6=Sat)
-        fun countExpectedForDate(reminders: List<MedicationReminder>, date: Calendar, isToday: Boolean): Int {
+        fun countExpectedForDate(reminders: List<MedicationReminder>, date: Calendar, isToday: Boolean, dailyLogs: List<ReminderLog>): Int {
             val dayOfWeek = date.get(Calendar.DAY_OF_WEEK) - 1
             val now = Calendar.getInstance()
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeValue = currentHour * 60 + currentMinute
             
+            // Normalize target date to start of day for creation check
+            val startOfTargetDay = date.clone() as Calendar
+            startOfTargetDay.set(Calendar.HOUR_OF_DAY, 0)
+            startOfTargetDay.set(Calendar.MINUTE, 0)
+            startOfTargetDay.set(Calendar.SECOND, 0)
+            startOfTargetDay.set(Calendar.MILLISECOND, 0)
+            
             var count = 0
             for (reminder in reminders) {
                 if (!reminder.isActive) continue
+                
+                // Check if reminder was created after this target day
+                if (reminder.createdAt != null) {
+                     val createdCal = Calendar.getInstance()
+                     createdCal.time = reminder.createdAt!!.toDate()
+                     createdCal.set(Calendar.HOUR_OF_DAY, 0)
+                     createdCal.set(Calendar.MINUTE, 0)
+                     createdCal.set(Calendar.SECOND, 0)
+                     createdCal.set(Calendar.MILLISECOND, 0)
+                     
+                     if (startOfTargetDay.before(createdCal)) {
+                         continue
+                     }
+                }
+
                 if (reminder.selectedDays.isNotEmpty() && !reminder.selectedDays.contains(dayOfWeek)) continue
                 
-                fun checkSlot(timeStr: String?) {
+                fun checkSlot(timeStr: String?, slotName: String) {
                     if (timeStr.isNullOrBlank()) return
-                    if (isToday) {
+                    
+                    val isTaken = dailyLogs.any { 
+                        it.reminderId == reminder.reminderId && 
+                        it.actionTaken == "taken" &&
+                        (it.timeSlot.equals(slotName, ignoreCase = true) || it.timeSlot == timeStr)
+                    }
+
+                    if (isTaken) {
+                        count++
+                    } else if (isToday) {
                         try {
                             val parts = timeStr.trim().split(":")
                             if (parts.size >= 2) {
@@ -113,10 +165,10 @@ class HomeViewModel @Inject constructor(
                         count++
                     }
                 }
-                checkSlot(reminder.morningTime)
-                checkSlot(reminder.noonTime)
-                checkSlot(reminder.afternoonTime)
-                checkSlot(reminder.eveningTime)
+                checkSlot(reminder.morningTime, "MORNING")
+                checkSlot(reminder.noonTime, "NOON")
+                checkSlot(reminder.afternoonTime, "AFTERNOON")
+                checkSlot(reminder.eveningTime, "EVENING")
             }
             return count
         }
@@ -131,20 +183,24 @@ class HomeViewModel @Inject constructor(
             startOfDay.set(Calendar.HOUR_OF_DAY, 0)
             startOfDay.set(Calendar.MINUTE, 0)
             startOfDay.set(Calendar.SECOND, 0)
+            startOfDay.set(Calendar.MILLISECOND, 0)
             
             val endOfDay = targetDate.clone() as Calendar
             endOfDay.set(Calendar.HOUR_OF_DAY, 23)
             endOfDay.set(Calendar.MINUTE, 59)
             endOfDay.set(Calendar.SECOND, 59)
+            endOfDay.set(Calendar.MILLISECOND, 999)
             
-            // Fixed: Use total expected only for times that have passed
-            val totalExpected = countExpectedForDate(reminders, targetDate, isToday)
-
-            val takenCount = logs.count { log ->
+            val dailyLogs = logs.filter { log ->
                 val logTime = log.actionTime?.toDate()?.time ?: 0
-                logTime >= startOfDay.timeInMillis && 
-                logTime <= endOfDay.timeInMillis &&
-                log.actionTaken == "taken"
+                logTime >= startOfDay.timeInMillis && logTime <= endOfDay.timeInMillis
+            }
+            
+            val totalExpected = countExpectedForDate(reminders, targetDate, isToday, dailyLogs)
+
+            val takenCount = dailyLogs.count { log ->
+                log.actionTaken == "taken" &&
+                activeReminderIds.contains(log.reminderId)
             }
             
             grandTotalExpected += totalExpected
@@ -205,24 +261,5 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadUserName() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            profileRepository.getCurrentUserProfile()
-                .onSuccess { user ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            userName = user?.fullName ?: "",
-                            avatarUrl = user?.avatarUrl
-                        )
-                    }
-                }
-                .onFailure {
-                    _uiState.update { state ->
-                        state.copy(isLoading = false)
-                    }
-                }
-        }
-    }
+
 }
