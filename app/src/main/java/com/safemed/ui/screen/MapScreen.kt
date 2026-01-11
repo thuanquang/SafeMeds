@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+
 import android.net.Uri
+import androidx.appcompat.content.res.AppCompatResources
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -51,8 +54,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+
 
 // Default location (Ho Chi Minh City, Vietnam)
 private val DEFAULT_LOCATION = GeoPoint(10.7769, 106.7009)
@@ -123,12 +125,6 @@ fun MapScreen(
             setMultiTouchControls(true)
             controller.setZoom(DEFAULT_ZOOM)
             controller.setCenter(DEFAULT_LOCATION)
-        }
-    }
-    
-    val locationOverlay = remember {
-        MyLocationNewOverlay(GpsMyLocationProvider(context), mapView).apply {
-            enableMyLocation()
         }
     }
 
@@ -217,8 +213,24 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize(),
                 update = { view ->
                     view.overlays.clear()
-                    if (hasLocationPermission) view.overlays.add(locationOverlay)
                     
+                    // Load custom marker icons
+                    val pharmacyMarkerDrawable = AppCompatResources.getDrawable(context, R.drawable.ic_marker_pharmacy)
+                    val userLocationDrawable = AppCompatResources.getDrawable(context, R.drawable.ic_marker_user_location)
+                    
+                    // Add user location marker (blue)
+                    uiState.userLocation?.let { userLoc ->
+                        val userMarker = Marker(view)
+                        userMarker.position = userLoc
+                        userMarker.title = "Your Location"
+                        userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        userLocationDrawable?.let { drawable ->
+                            userMarker.icon = drawable
+                        }
+                        view.overlays.add(userMarker)
+                    }
+                    
+                    // Add pharmacy markers (green)
                     uiState.pharmacies.forEach { pharmacyDistance ->
                         val pharmacy = pharmacyDistance.pharmacy
                         val marker = Marker(view)
@@ -226,6 +238,9 @@ fun MapScreen(
                         marker.title = pharmacy.name
                         marker.snippet = pharmacyDistance.formatDistance()
                         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        pharmacyMarkerDrawable?.let { drawable ->
+                            marker.icon = drawable
+                        }
                         marker.setOnMarkerClickListener { m, _ ->
                             viewModel.onPharmacySelected(pharmacy)
                             m.showInfoWindow()

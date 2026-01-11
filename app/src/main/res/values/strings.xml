@@ -159,7 +159,7 @@
 
     <!-- Map Screen -->
     <string name="map_title">🗺️ Tìm nhà thuốc</string>
-    <string name="map_title_osm">🗺️ Tìm nhà thuốc (OSM)</string>
+    <string name="map_title_osm">Tìm nhà thuốc</string>
     <string name="map_search_hint">Tìm nhà thuốc gần bạn</string>
     <string name="map_no_pharmacy">Không tìm thấy nhà thuốc</string>
     <string name="map_nearby_pharmacies">Nhà thuốc gần đây</string>
